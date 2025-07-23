@@ -30,6 +30,37 @@ const Hero: React.FC = () => {
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+        {/* Moving Stars Animation */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+          {[...Array(40)].map((_, i) => {
+            const duration = 8 + Math.random() * 8;
+            const startX = Math.random() * 100;
+            const startY = Math.random() * 100;
+            const endX = Math.random() * 100;
+            const endY = Math.random() * 100;
+            return (
+              <circle
+                key={i}
+                r={1.2 + Math.random() * 1.5}
+                fill="white"
+                opacity={0.7 + Math.random() * 0.3}
+              >
+                <animate
+                  attributeName="cx"
+                  values={`${startX}%;${endX}%`}
+                  dur={`${duration}s`}
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="cy"
+                  values={`${startY}%;${endY}%`}
+                  dur={`${duration}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
+            );
+          })}
+        </svg>
         <div className="absolute inset-0">
           {[...Array(50)].map((_, i) => (
             <div
