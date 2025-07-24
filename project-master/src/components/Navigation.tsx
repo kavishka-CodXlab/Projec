@@ -44,7 +44,7 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
       <div className="absolute left-0 top-0 w-full h-1 z-50">
         <div className="w-full h-full animate-gradient-x bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-80 blur-sm"></div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 relative">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center gap-2">
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
@@ -62,7 +62,7 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
           </div>
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="ml-2 md:ml-10 flex items-baseline space-x-2 md:space-x-4 overflow-x-auto">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -92,7 +92,7 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden mt-2 animate-fade-in-down">
-            <div className="px-2 pt-2 pb-3 space-y-2 bg-gradient-to-br from-blue-900/95 via-purple-900/95 to-blue-900/95 rounded-xl shadow-2xl">
+            <div className="px-2 pt-2 pb-3 space-y-2 bg-gradient-to-br from-blue-900/95 via-purple-900/95 to-blue-900/95 rounded-xl shadow-2xl w-full">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -110,7 +110,7 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
           </div>
         )}
         {/* Admin Dashboard Toggle (side of page) */}
-        <div className="fixed right-4 top-20 z-50">
+        <div className="fixed right-2 sm:right-4 top-20 z-50 w-fit">
           <button
             onClick={onAdminLogin}
             className="flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-800 transition-all duration-200"
