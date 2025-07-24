@@ -116,12 +116,12 @@ const AdminDashboard: React.FC<{ showLogin: boolean; setShowLogin: (show: boolea
 
   return (
     <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-50 overflow-y-auto">
-      <div className="min-h-screen p-4">
+      <div className="min-h-screen p-2 sm:p-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-white flex items-center">
-              <Settings className="w-8 h-8 mr-3 text-blue-400" />
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 sm:gap-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center">
+              <Settings className="w-7 sm:w-8 h-7 sm:h-8 mr-2 sm:mr-3 text-blue-400" />
               Admin Dashboard
             </h1>
             <div className="flex gap-2">
@@ -141,7 +141,7 @@ const AdminDashboard: React.FC<{ showLogin: boolean; setShowLogin: (show: boolea
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-4 mb-8">
+          <div className="flex flex-wrap gap-2 sm:space-x-4 mb-8">
             {[
               { id: 'messages', label: 'Messages', icon: Mail },
               { id: 'content', label: 'Content', icon: Edit },
@@ -152,7 +152,7 @@ const AdminDashboard: React.FC<{ showLogin: boolean; setShowLogin: (show: boolea
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                  className={`flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors duration-200 ${
                     activeTab === tab.id
                       ? 'bg-blue-600 text-white'
                       : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
