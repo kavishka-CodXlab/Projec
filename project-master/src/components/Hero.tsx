@@ -58,8 +58,10 @@ const Hero: React.FC = () => {
     function handleResize() {
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+      if (canvas) {
+        canvas.width = width;
+        canvas.height = height;
+      }
     }
     window.addEventListener('resize', handleResize);
 
