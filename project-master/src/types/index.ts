@@ -36,14 +36,3 @@ export interface UserData {
     whatsapp: string;
   };
 }
-
-export interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  date: Date;
-  author: string;
-  imageUrl?: string;
-  videoUrl?: string;
-  externalUrl?: string;
-}

@@ -1,14 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Home, User, GraduationCap, Briefcase, Code, Mail, Book, Settings } from 'lucide-react';
+import { Menu, X, Home, User, GraduationCap, Briefcase, Code, Mail, Settings } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import AdminDashboard, { AdminLogin } from './AdminDashboard';
+import AdminDashboard from './AdminDashboard';
 
 
-const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) => {
+const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isAdmin, logoutAdmin } = useApp();
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { setIsAdmin } = useApp();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username === 'admin' && password === 'admin123') {
+      setIsAuthenticated(true);
+      setShowLogin(false);
+      setShowAdmin(true);
+      setError('');
+      setIsAdmin(true); // Enable AdminDashboard for valid login
+    } else {
+      setError('Invalid credentials');
+    }
+  };
+
+  const handleLogout = () => {
+    setShowAdmin(false);
+    setIsAuthenticated(false);
+    setUsername('');
+    setPassword('');
+    setIsAdmin(false); // Disable AdminDashboard on logout
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,7 +51,6 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
     { name: 'Projects', href: '#projects', icon: Briefcase },
     { name: 'Skills', href: '#skills', icon: Code },
     { name: 'Contact', href: '#contact', icon: Mail },
-    { name: 'Blog', href: '#blog', icon: Book },
   ];
 
   const scrollToSection = (href: string) => {
@@ -44,9 +69,9 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
       <div className="absolute left-0 top-0 w-full h-1 z-50">
         <div className="w-full h-full animate-gradient-x bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-80 blur-sm"></div>
       </div>
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 relative">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0 flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 relative">
+        <div className="flex flex-col md:flex-row justify-between items-center h-16">
+          <div className="flex-shrink-0 flex items-center gap-2 mb-2 md:mb-0">
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
               <button
                 onClick={() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })}
@@ -57,12 +82,11 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
                 <span className="text-blue-400 group-hover:text-blue-300 transition">/&gt;</span>
               </button>
             </span>
-            {/* Animated Dot */}
             <span className="ml-2 w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 animate-pulse shadow-lg"></span>
           </div>
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-2 md:ml-10 flex items-baseline space-x-2 md:space-x-4 overflow-x-auto">
+          <div className="hidden md:block w-full md:w-auto">
+            <div className="ml-0 md:ml-10 flex flex-wrap md:flex-nowrap items-baseline space-x-2 md:space-x-4 justify-center md:justify-start">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -77,6 +101,15 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
                   </button>
                 );
               })}
+              {/* Admin Toggle Button */}
+              <button
+                onClick={() => setShowLogin(true)}
+                className="relative px-4 py-2 rounded-full font-medium text-sm flex items-center gap-2 group overflow-hidden bg-gradient-to-r from-purple-700/30 to-blue-700/30 hover:from-purple-500/50 hover:to-blue-500/50 transition-all duration-300"
+              >
+                <span className="absolute left-0 top-0 w-full h-full bg-gradient-to-r from-purple-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-all duration-300 blur-sm animate-gradient-x"></span>
+                <Settings className="w-4 h-4 text-purple-400 group-hover:scale-125 transition-transform duration-300" />
+                <span className="relative z-10 text-gray-200 group-hover:text-white transition-colors duration-200">Admin</span>
+              </button>
             </div>
           </div>
           {/* Mobile menu button */}
@@ -91,7 +124,7 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
         </div>
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden mt-2 animate-fade-in-down">
+          <div className="md:hidden mt-2 animate-fade-in-down w-full">
             <div className="px-2 pt-2 pb-3 space-y-2 bg-gradient-to-br from-blue-900/95 via-purple-900/95 to-blue-900/95 rounded-xl shadow-2xl w-full">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -106,36 +139,65 @@ const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) =>
                   </button>
                 );
               })}
-            </div>
-          </div>
-        )}
-        {/* Admin Dashboard Toggle (side of page) */}
-        <div className="fixed right-2 sm:right-4 top-20 z-50 w-fit">
-          <button
-            onClick={onAdminLogin}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-800 transition-all duration-200"
-          >
-            <Settings className="w-5 h-5" />
-            <span>Admin</span>
-          </button>
-          {isAdmin && (
-            <button
-              onClick={logoutAdmin}
-              className="ml-2 px-3 py-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all duration-200"
-            >Logout</button>
-          )}
-        </div>
-        {showAdminLogin && (
-          <div className="fixed inset-0 z-50">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminLogin(false)} />
-            <div className="absolute right-8 top-24">
-              <div style={{ minWidth: 320 }}>
-                <AdminLogin onLogin={() => setShowAdminLogin(false)} />
-              </div>
+              {/* Admin Toggle Button for Mobile */}
+              <button
+                onClick={() => setShowLogin(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-base font-medium text-gray-200 hover:text-white bg-gradient-to-r from-purple-700/30 to-blue-700/30 hover:from-purple-500/50 hover:to-blue-500/50 transition-all duration-300 group"
+              >
+                <Settings className="w-5 h-5 text-purple-400 group-hover:scale-125 transition-transform duration-300" />
+                <span>Admin</span>
+              </button>
             </div>
           </div>
         )}
       </div>
+      {/* Admin Login Modal */}
+      {showLogin && !isAuthenticated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLogin(false)} />
+          <div className="relative z-10">
+            <form onSubmit={handleLogin} className="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-sm">
+              <h2 className="text-2xl font-bold text-white mb-6 text-center">Admin Login</h2>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                className="w-full px-3 py-2 mb-4 bg-slate-700 border border-slate-600 rounded-lg text-white"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-3 py-2 mb-4 bg-slate-700 border border-slate-600 rounded-lg text-white"
+              />
+              {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold"
+              >
+                Login
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Admin Dashboard Modal */}
+      {showAdmin && isAuthenticated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleLogout} />
+          <div className="relative z-10 w-full max-w-3xl">
+            <AdminDashboard />
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-semibold mt-4"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
       {/* Gradient Animation Keyframes */}
       <style>{`
         @keyframes gradient-x {

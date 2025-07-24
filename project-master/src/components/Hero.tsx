@@ -8,6 +8,65 @@ const Hero: React.FC = () => {
 
   useEffect(() => {
     setIsVisible(true);
+
+    // Moving Star Animation
+    const canvas = document.getElementById('star-canvas') as HTMLCanvasElement | null;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const STAR_COUNT = 500;
+    const stars = Array.from({ length: STAR_COUNT }, () => ({
+      x: Math.random() * width - width / 2, // Spread stars from right to left
+      y: Math.random() * height,
+      z: Math.random() * width,
+      o: 0.5 + Math.random() * 0.5,
+      r: 0.5 + Math.random() * 1.5,
+      speed: 0.5 + Math.random() * 1.5
+    }));
+
+    function drawStars() {
+      ctx?.clearRect(0, 0, width, height);
+      for (let star of stars) {
+        star.z -= star.speed;
+        if (star.z <= 0) {
+          star.x = Math.random() * width;
+          star.y = Math.random() * height;
+          star.z = width;
+        }
+        let k = 128.0 / star.z;
+        let sx = star.x * k + width / 2;
+        let sy = star.y * k + height / 2;
+        if (sx < 0 || sx >= width || sy < 0 || sy >= height) continue;
+        ctx?.beginPath();
+        ctx?.arc(sx, sy, star.r, 0, 2 * Math.PI);
+        ctx!.fillStyle = `rgba(180,220,255,${star.o})`;
+        ctx?.fill();
+      }
+    }
+
+    let animationFrameId: number;
+    function animate() {
+      drawStars();
+      animationFrameId = requestAnimationFrame(animate);
+    }
+    animate();
+
+    function handleResize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const scrollToAbout = () => {
@@ -27,54 +86,9 @@ const Hero: React.FC = () => {
 
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
-        {/* Moving Stars Animation */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
-          {[...Array(40)].map((_, i) => {
-            const duration = 8 + Math.random() * 8;
-            const startX = Math.random() * 100;
-            const startY = Math.random() * 100;
-            const endX = Math.random() * 100;
-            const endY = Math.random() * 100;
-            return (
-              <circle
-                key={i}
-                r={1.2 + Math.random() * 1.5}
-                fill="white"
-                opacity={0.7 + Math.random() * 0.3}
-              >
-                <animate
-                  attributeName="cx"
-                  values={`${startX}%;${endX}%`}
-                  dur={`${duration}s`}
-                  repeatCount="indefinite"
-                />
-                <animate
-                  attributeName="cy"
-                  values={`${startY}%;${endY}%`}
-                  dur={`${duration}s`}
-                  repeatCount="indefinite"
-                />
-              </circle>
-            );
-          })}
-        </svg>
-        <div className="absolute inset-0">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400/30 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            ></div>
-          ))}
-        </div>
+      {/* Moving Star Animated Background */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <canvas id="star-canvas" className="w-full h-full block" style={{ position: 'absolute', inset: 0 }}></canvas>
       </div>
 
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
