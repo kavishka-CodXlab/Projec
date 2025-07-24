@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Home, User, GraduationCap, Briefcase, Code, Mail, Settings } from 'lucide-react';
+import { Menu, X, Home, User, GraduationCap, Briefcase, Code, Mail, Book, Settings } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import AdminDashboard, { AdminLogin } from './AdminDashboard';
 
 
-const Navigation: React.FC = () => {
+const Navigation: React.FC<{ onAdminLogin: () => void }> = ({ onAdminLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { isAdmin, logoutAdmin } = useApp();
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +25,7 @@ const Navigation: React.FC = () => {
     { name: 'Projects', href: '#projects', icon: Briefcase },
     { name: 'Skills', href: '#skills', icon: Code },
     { name: 'Contact', href: '#contact', icon: Mail },
+    { name: 'Blog', href: '#blog', icon: Book },
   ];
 
   const scrollToSection = (href: string) => {
@@ -35,7 +39,7 @@ const Navigation: React.FC = () => {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
       scrolled ? 'bg-gradient-to-r from-blue-900 via-purple-900 to-blue-900 shadow-2xl shadow-blue-500/10' : 'bg-transparent'
-    }`}> 
+    }`}>
       {/* Animated Gradient Bar */}
       <div className="absolute left-0 top-0 w-full h-1 z-50">
         <div className="w-full h-full animate-gradient-x bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-80 blur-sm"></div>
@@ -102,6 +106,32 @@ const Navigation: React.FC = () => {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        )}
+        {/* Admin Dashboard Toggle (side of page) */}
+        <div className="fixed right-4 top-20 z-50">
+          <button
+            onClick={onAdminLogin}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-800 transition-all duration-200"
+          >
+            <Settings className="w-5 h-5" />
+            <span>Admin</span>
+          </button>
+          {isAdmin && (
+            <button
+              onClick={logoutAdmin}
+              className="ml-2 px-3 py-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all duration-200"
+            >Logout</button>
+          )}
+        </div>
+        {showAdminLogin && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminLogin(false)} />
+            <div className="absolute right-8 top-24">
+              <div style={{ minWidth: 320 }}>
+                <AdminLogin onLogin={() => setShowAdminLogin(false)} />
+              </div>
             </div>
           </div>
         )}

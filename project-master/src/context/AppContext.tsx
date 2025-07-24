@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Project, ContactMessage, UserData } from '../types';
+import { Project, ContactMessage, UserData, BlogPost } from '../types';
 
 interface AppContextType {
   projects: Project[];
@@ -7,12 +7,18 @@ interface AppContextType {
   userData: UserData;
   isAdmin: boolean;
   chatbotOpen: boolean;
+  blogPosts: BlogPost[];
   addMessage: (message: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => void;
   markMessageAsRead: (id: string) => void;
   updateUserData: (data: Partial<UserData>) => void;
   updateProjects: (projects: Project[]) => void;
   setIsAdmin: (isAdmin: boolean) => void;
   setChatbotOpen: (open: boolean) => void;
+  addBlogPost: (post: Omit<BlogPost, 'id' | 'date'>) => void;
+  updateBlogPost: (id: string, updates: Partial<BlogPost>) => void;
+  removeBlogPost: (id: string) => void;
+  loginAdmin: (username: string, password: string) => boolean;
+  logoutAdmin: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -75,12 +81,43 @@ const initialProjects: Project[] = [
   }
 ];
 
+const initialBlogPosts: BlogPost[] = [
+  {
+    id: '1',
+    title: 'How to Build a Modern Portfolio with React & Tailwind',
+    content: 'A step-by-step guide to creating a beautiful, responsive portfolio website using React and Tailwind CSS.',
+    date: new Date('2025-07-24'),
+    author: 'Kavishka Kathilakarathna',
+    imageUrl: '',
+    videoUrl: '',
+    externalUrl: ''
+  }
+];
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [userData, setUserData] = useState<UserData>(initialUserData);
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatbotOpen, setChatbotOpen] = useState(false);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [adminAuth, setAdminAuth] = useState({ username: '', authenticated: false });
+
+  // Load from localStorage on mount
+  React.useEffect(() => {
+    const storedAdmin = localStorage.getItem('isAdmin');
+    const storedBlogPosts = localStorage.getItem('blogPosts');
+    if (storedAdmin) setIsAdmin(JSON.parse(storedAdmin));
+    if (storedBlogPosts) setBlogPosts(JSON.parse(storedBlogPosts));
+  }, []);
+
+  // Persist to localStorage on change
+  React.useEffect(() => {
+    localStorage.setItem('isAdmin', JSON.stringify(isAdmin));
+  }, [isAdmin]);
+  React.useEffect(() => {
+    localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
+  }, [blogPosts]);
 
   const addMessage = (messageData: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => {
     const newMessage: ContactMessage = {
@@ -106,6 +143,38 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setProjects(newProjects);
   };
 
+  const addBlogPost = (post: Omit<BlogPost, 'id' | 'date'>) => {
+    const newPost: BlogPost = {
+      ...post,
+      id: Date.now().toString(),
+      date: new Date(),
+      author: userData.name
+    };
+    setBlogPosts(prev => [newPost, ...prev]);
+  };
+
+  const updateBlogPost = (id: string, updates: Partial<BlogPost>) => {
+    setBlogPosts(prev => prev.map(post => post.id === id ? { ...post, ...updates } : post));
+  };
+
+  const removeBlogPost = (id: string) => {
+    setBlogPosts(prev => prev.filter(post => post.id !== id));
+  };
+
+  const loginAdmin = (username: string, password: string) => {
+    if (username === 'admin' && password === 'admin123') {
+      setIsAdmin(true);
+      setAdminAuth({ username, authenticated: true });
+      return true;
+    }
+    return false;
+  };
+
+  const logoutAdmin = () => {
+    setIsAdmin(false);
+    setAdminAuth({ username: '', authenticated: false });
+  };
+
   return (
     <AppContext.Provider value={{
       projects,
@@ -113,12 +182,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       userData,
       isAdmin,
       chatbotOpen,
+      blogPosts,
       addMessage,
       markMessageAsRead,
       updateUserData,
       updateProjects,
       setIsAdmin,
-      setChatbotOpen
+      setChatbotOpen,
+      addBlogPost,
+      updateBlogPost,
+      removeBlogPost,
+      loginAdmin,
+      logoutAdmin
     }}>
       {children}
     </AppContext.Provider>

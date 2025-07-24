@@ -9,13 +9,29 @@ import Skills from './components/Skills';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
-import AdminDashboard from './components/AdminDashboard';
+import AdminDashboard, { AdminLogin } from './components/AdminDashboard';
 
 function App() {
+  const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+  const handleAdminLogin = () => {
+    setShowAdminLogin(true);
+  };
+
+  const handleLoginSuccess = () => {
+    setShowAdminLogin(false);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
   return (
     <AppProvider>
       <div className="min-h-screen bg-slate-900 text-white">
-        <Navigation />
+        <Navigation onAdminLogin={handleAdminLogin} />
         <Hero />
         <About />
         <Education />
@@ -24,7 +40,14 @@ function App() {
         <Contact />
         <Footer />
         <Chatbot />
-        <AdminDashboard />
+        {/* Show admin login popup if toggled and not authenticated */}
+        {showAdminLogin && !isAuthenticated && (
+          <AdminLogin onLogin={handleLoginSuccess} />
+        )}
+        {/* Show admin dashboard only after successful login */}
+        {isAuthenticated && (
+          <AdminDashboard showLogin={showAdminLogin} setShowLogin={setShowAdminLogin} onLogout={handleLogout} isAuthenticated={isAuthenticated} />
+        )}
       </div>
     </AppProvider>
   );
