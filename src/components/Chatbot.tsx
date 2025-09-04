@@ -173,9 +173,14 @@ const Chatbot: React.FC = () => {
                 placeholder="Ask me anything..."
                 className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
               />
-              <button onClick={handleSendMessage}
+              <button
+                onClick={handleSendMessage}
                 disabled={!inputValue.trim()}
-                className="px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Send"
+                aria-label="Send"
+                type="button"
+              >
                 <Send className="w-4 h-4" />
               </button>
             </div>

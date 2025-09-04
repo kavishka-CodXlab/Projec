@@ -37,8 +37,8 @@ const initialUserData: UserData = {
   },
   skills: ["JavaScript", "TypeScript", "React", "Node.js", "Python", "Java", "HTML/CSS", "Git", "SQL", "MongoDB"],
   socialLinks: {
-    github: "https://github.com/",
-    linkedin: "https://linkedin.com/in/",
+    github: "https://github.com/kavishka-CodXlab",
+    linkedin: "https://www.linkedin.com/in/kavishka-thilakarathna",
     facebook: "https://facebook.com/",
     instagram: "https://instagram.com/",
     whatsapp: "https://wa.me/"
@@ -52,7 +52,7 @@ const initialProjects: Project[] = [
     description: 'A full-stack e-commerce solution with user authentication, product management, and payment integration.',
     technologies: ['React', 'Node.js', 'Express', 'MongoDB', 'Stripe'],
     image: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
-    githubUrl: 'https://github.com/',
+    githubUrl: 'https://github.com/kavishka-CodXlab',
     liveUrl: 'https://example.com'
   },
   {
@@ -61,7 +61,7 @@ const initialProjects: Project[] = [
     description: 'A collaborative task management application with real-time updates and team collaboration features.',
     technologies: ['React', 'TypeScript', 'Firebase', 'Material-UI'],
     image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg',
-    githubUrl: 'https://github.com/',
+    githubUrl: 'https://github.com/kavishka-CodXlab',
     liveUrl: 'https://example.com'
   },
   {
@@ -69,8 +69,8 @@ const initialProjects: Project[] = [
     title: 'Weather Analytics Dashboard',
     description: 'A responsive dashboard for weather data visualization with interactive charts and forecasting.',
     technologies: ['Vue.js', 'D3.js', 'Python', 'FastAPI', 'PostgreSQL'],
-    image: 'https://images.pexels.com/photos/3184298/pexels-photo-3184298.jpeg',
-    githubUrl: 'https://github.com/',
+    image: '/src/assets/WeatherAnalytics.png',
+    githubUrl: 'https://github.com/kavishka-CodXlab',
     liveUrl: 'https://example.com'
   }
 ];
