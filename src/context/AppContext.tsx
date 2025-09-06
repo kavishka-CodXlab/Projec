@@ -40,8 +40,8 @@ const initialUserData: UserData = {
   socialLinks: {
     github: "https://github.com/kavishka-CodXlab",
     linkedin: "https://www.linkedin.com/in/kavishka-thilakarathna",
-    facebook: "https://facebook.com/",
-    instagram: "https://instagram.com/",
+    facebook: "https://www.facebook.com/profile.php?id=100076249214752",
+    instagram: "https://www.instagram.com/kavii_shkaa/",
     whatsapp: "https://wa.me/"
   }
 };

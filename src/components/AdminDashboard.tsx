@@ -73,12 +73,12 @@ const SortableProjectItem: React.FC<SortableProjectItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-slate-700/30 rounded-lg p-4 ${isDragging ? 'shadow-2xl' : ''}`}
+      className={`bg-slate-700/30 rounded-lg lg:rounded-xl p-4 lg:p-6 ${isDragging ? 'shadow-2xl' : ''}`}
     >
       {isEditing ? (
-        <div className="space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1 space-y-3 mr-4">
+        <div className="space-y-4 lg:space-y-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start space-y-4 lg:space-y-0">
+            <div className="flex-1 space-y-3 lg:space-y-4 lg:mr-6">
               {/* Drag Handle */}
               <div className="flex items-center space-x-2 mb-2">
                 <button
@@ -99,8 +99,8 @@ const SortableProjectItem: React.FC<SortableProjectItemProps> = ({
                 <div className="space-y-3">
                   {/* Current Image Preview */}
                   {project.image && (
-                    <div className="w-full max-w-xs">
-                      <div className="w-full h-32 rounded-lg overflow-hidden bg-slate-600 border border-slate-500">
+                    <div className="w-full max-w-xs lg:max-w-sm">
+                      <div className="w-full h-32 lg:h-40 rounded-lg overflow-hidden bg-slate-600 border border-slate-500">
                         <img
                           src={project.image}
                           alt="Project preview"
@@ -230,8 +230,8 @@ const SortableProjectItem: React.FC<SortableProjectItemProps> = ({
           </div>
         </div>
       ) : (
-        <div className="flex items-start space-x-4">
-          <div className="w-24 h-18 rounded-lg overflow-hidden bg-slate-600 flex-shrink-0 border border-slate-500">
+        <div className="flex items-start space-x-4 lg:space-x-6">
+          <div className="w-24 h-18 lg:w-32 lg:h-24 rounded-lg overflow-hidden bg-slate-600 flex-shrink-0 border border-slate-500">
             {project.image ? (
               <img
                 src={project.image}
@@ -240,31 +240,31 @@ const SortableProjectItem: React.FC<SortableProjectItemProps> = ({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <ImageIcon className="w-6 h-6" />
+                <ImageIcon className="w-6 h-6 lg:w-8 lg:h-8" />
               </div>
             )}
           </div>
           <div className="flex-1">
-            <h3 className="text-white font-semibold mb-2">{project.title}</h3>
-            <p className="text-gray-300 mb-3 text-sm line-clamp-2">{project.description}</p>
-            <div className="flex flex-wrap gap-2">
+            <h3 className="text-white font-semibold mb-2 lg:mb-3 text-lg lg:text-xl">{project.title}</h3>
+            <p className="text-gray-300 mb-3 lg:mb-4 text-sm lg:text-base line-clamp-2 lg:line-clamp-3">{project.description}</p>
+            <div className="flex flex-wrap gap-2 lg:gap-3">
               {project.technologies.map((tech, index) => (
                 <span
                   key={`${project.id}-tech-${index}`}
-                  className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs"
+                  className="px-2 py-1 lg:px-3 lg:py-1.5 bg-blue-600/20 text-blue-400 rounded text-xs lg:text-sm"
                 >
                   {tech}
                 </span>
               ))}
             </div>
             {(project.githubUrl || project.liveUrl) && (
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-3 lg:gap-4 mt-3 lg:mt-4">
                 {project.githubUrl && (
                   <a
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 text-xs"
+                    className="text-blue-400 hover:text-blue-300 text-xs lg:text-sm font-medium"
                   >
                     GitHub
                   </a>
@@ -274,7 +274,7 @@ const SortableProjectItem: React.FC<SortableProjectItemProps> = ({
                     href={project.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-green-400 hover:text-green-300 text-xs"
+                    className="text-green-400 hover:text-green-300 text-xs lg:text-sm font-medium"
                   >
                     Live Demo
                   </a>
@@ -367,7 +367,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     console.log('updateProject called with:', { id, updates });
     setEditProjectsForm(prev => {
       const updated = prev.map(p => 
-        p.id === id ? { ...p, ...updates } : p
+      p.id === id ? { ...p, ...updates } : p
       );
       console.log('Updated projects form:', updated);
       return updated;
@@ -508,47 +508,52 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   return (
     <div className={`fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-50 overflow-y-auto transition-opacity duration-200 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="min-h-screen p-4">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen p-4 lg:p-8">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-white flex items-center">
-              <Settings className="w-8 h-8 mr-3 text-blue-400" />
+          <div className="flex justify-between items-center mb-8 lg:mb-12">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-3xl lg:text-4xl font-bold text-white flex items-center">
+                <Settings className="w-8 h-8 lg:w-10 lg:h-10 mr-3 text-blue-400" />
               Admin Dashboard
             </h1>
-            <div className="flex items-center space-x-4">
+              <div className="hidden lg:block text-sm text-gray-400">
+                Manage your portfolio content and messages
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 lg:space-x-4">
               <button
                 onClick={handleCloseAdmin}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-semibold"
+                className="px-4 py-2 lg:px-6 lg:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-semibold text-sm lg:text-base"
               >
                 Logout
               </button>
             <button
               onClick={handleCloseAdmin}
-              className="p-2 text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors duration-200"
+                className="p-2 lg:p-3 text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors duration-200"
               aria-label="Close admin dashboard"
             >
-              <X className="w-6 h-6" />
+                <X className="w-6 h-6 lg:w-7 lg:h-7" />
             </button>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-4 mb-8">
+          <div className="flex flex-wrap gap-3 lg:gap-4 mb-8 lg:mb-12">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                  className={`flex items-center space-x-2 px-4 py-3 lg:px-6 lg:py-4 rounded-lg font-medium transition-colors duration-200 text-sm lg:text-base ${
                     activeTab === tab.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                      : 'bg-slate-800 text-gray-300 hover:bg-slate-700 hover:text-white'
                   }`}
                   aria-label={`Switch to ${tab.label} tab`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -557,10 +562,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
           {/* Messages Tab */}
           {activeTab === 'messages' && (
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Contact Messages</h2>
-                <div className="flex space-x-2">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-slate-700">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8 space-y-4 lg:space-y-0">
+                <h2 className="text-2xl lg:text-3xl font-bold text-white">Contact Messages</h2>
+                <div className="flex flex-wrap gap-2 lg:gap-3">
                   <button
                     onClick={() => setMessageFilter('all')}
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
@@ -728,7 +733,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                   </div>
                 </div>
 
-                {editingProjects ? (
+                      {editingProjects ? (
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -738,7 +743,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       items={editProjectsForm.map(project => project.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="space-y-4">
+                        <div className="grid gap-6 lg:gap-8">
                         {editProjectsForm.map((project) => (
                           <SortableProjectItem
                             key={project.id}
@@ -749,12 +754,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                             onTechnologiesChange={handleTechnologiesChange}
                             onImageUpload={handleImageUpload}
                           />
-                        ))}
-                      </div>
+                            ))}
+                          </div>
                     </SortableContext>
                   </DndContext>
                 ) : (
-                  <div className="grid gap-6">
+                  <div className="grid gap-6 lg:gap-8">
                     {projects.map((project) => (
                       <SortableProjectItem
                         key={project.id}
@@ -766,8 +771,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         onImageUpload={handleImageUpload}
                       />
                     ))}
-                  </div>
-                )}
+                        </div>
+                      )}
               </div>
             </div>
           )}

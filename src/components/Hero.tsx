@@ -93,20 +93,20 @@ const Hero: React.FC = () => {
         <canvas id="star-canvas" className="w-full h-full block" style={{ position: 'absolute', inset: 0 }}></canvas>
       </div>
 
-      <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold mb-6">
-            <span className="block text-white mb-2">Hello, I'm</span>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 lg:mb-6">
+            <span className="block text-white mb-1 lg:mb-2">Hello, I'm</span>
             <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
               Kavishka Thilakarathna
             </span>
           </h1>
           
-          <p className="text-xl sm:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl xl:text-2xl text-gray-300 mb-6 lg:mb-8 max-w-2xl xl:max-w-3xl mx-auto leading-relaxed">
             Computer Science Student & Aspiring Software Developer
           </p>
           
-          <div className="flex justify-center space-x-6 mb-12">
+          <div className="flex justify-center space-x-4 lg:space-x-6 mb-8 lg:mb-12">
             {socialIcons.map((social, index) => {
               const Icon = social.icon;
               return (
@@ -115,19 +115,19 @@ const Hero: React.FC = () => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`p-3 rounded-full bg-slate-800/50 border border-slate-700 text-gray-300 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
+                  className={`p-2.5 lg:p-3 rounded-full bg-slate-800/50 border border-slate-700 text-gray-300 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
                 </a>
               );
             })}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center">
             <button
               onClick={scrollToAbout}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
+              className="px-6 py-2.5 lg:px-8 lg:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold text-sm lg:text-base hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
             >
               Explore My Work
             </button>
@@ -138,7 +138,7 @@ const Hero: React.FC = () => {
                 const element = document.querySelector('#contact');
                 if (element) element.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="px-8 py-3 border-2 border-blue-600 text-blue-400 rounded-full font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105"
+              className="px-6 py-2.5 lg:px-8 lg:py-3 border-2 border-blue-600 text-blue-400 rounded-full font-semibold text-sm lg:text-base hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105"
             >
               Get In Touch
             </a>
