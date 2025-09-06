@@ -66,11 +66,11 @@ const initialProjects: Project[] = [
   },
   {
     id: '3',
-    title: 'Weather Analytics Dashboard',
-    description: 'A responsive dashboard for weather data visualization with interactive charts and forecasting.',
-    technologies: ['Vue.js', 'D3.js', 'Python', 'FastAPI', 'PostgreSQL'],
-    image: '/src/assets/WeatherAnalytics.png',
-    githubUrl: 'https://github.com/kavishka-CodXlab',
+    title: 'AI Medical Chatbot',
+    description: 'Developed an intelligent chatbot to assist users with basic medical queries and symptom guidance. Integrated LLM APIs for natural language processing, PostgreSQL for data management, and REST APIs for backend communication. Implemented logging and testing to ensure production-ready performance and reliability.',
+    technologies: ['Python 3.6+', 'Langchain', 'FAISS', 'Chainlit', 'PyPDF2', 'Git'],
+    image: '/src/assets/AI Medical Chatbot.png',
+    githubUrl: 'https://github.com/kavishka-CodXlab/medbot-2.0',
     liveUrl: 'https://example.com'
   }
 ];

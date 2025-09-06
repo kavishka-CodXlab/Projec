@@ -84,7 +84,7 @@ const Footer: React.FC = () => {
             <Heart className="w-4 h-4 text-red-400" />
             <span>and</span>
             <Code className="w-4 h-4 text-blue-400" />
-            <span>by Code24.LABS 🇱🇰 </span>
+            <span>by. 🇱🇰 </span>
           </div>
           <div className="text-gray-400 text-sm text-center">
             © {new Date().getFullYear()} Kavishka Thilakarathna. All rights reserved.
