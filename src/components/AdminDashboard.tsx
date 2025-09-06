@@ -297,7 +297,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     userData, 
     updateUserData, 
     projects, 
-    updateProjects 
+    updateProjects,
+    saveUserData,
+    saveProjects,
+    loading,
+    error
   } = useApp();
   
   const [activeTab, setActiveTab] = useState<'messages' | 'content'>('messages');
@@ -305,6 +309,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [editingProjects, setEditingProjects] = useState(false);
   const [editUserForm, setEditUserForm] = useState(userData);
   const [editProjectsForm, setEditProjectsForm] = useState(projects);
+  const [saving, setSaving] = useState(false);
 
   // Sync local state with global state when they change
   useEffect(() => {
@@ -337,23 +342,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   ], []);
 
   // Optimized handlers with useCallback
-  const handleUserDataSave = useCallback(() => {
-    updateUserData(editUserForm);
-    setEditingUserData(false);
-    // Force a small delay to ensure state updates properly
-    setTimeout(() => {
-      setEditUserForm(editUserForm);
-    }, 100);
-  }, [editUserForm, updateUserData]);
+  const handleUserDataSave = useCallback(async () => {
+    try {
+      setSaving(true);
+      updateUserData(editUserForm);
+      await saveUserData();
+      setEditingUserData(false);
+    } catch (err) {
+      console.error('Failed to save user data:', err);
+    } finally {
+      setSaving(false);
+    }
+  }, [editUserForm, updateUserData, saveUserData]);
 
-  const handleProjectsSave = useCallback(() => {
-    updateProjects(editProjectsForm);
-    setEditingProjects(false);
-    // Force a small delay to ensure state updates properly
-    setTimeout(() => {
-      setEditProjectsForm(editProjectsForm);
-    }, 100);
-  }, [editProjectsForm, updateProjects]);
+  const handleProjectsSave = useCallback(async () => {
+    try {
+      setSaving(true);
+      updateProjects(editProjectsForm);
+      await saveProjects();
+      setEditingProjects(false);
+    } catch (err) {
+      console.error('Failed to save projects:', err);
+    } finally {
+      setSaving(false);
+    }
+  }, [editProjectsForm, updateProjects, saveProjects]);
 
   const handleUserDataCancel = useCallback(() => {
     setEditUserForm(userData);
@@ -638,12 +651,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     )}
                     <button
                       onClick={editingUserData ? handleUserDataSave : () => setEditingUserData(true)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                      disabled={saving}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50"
                     >
                       {editingUserData ? (
                         <>
                           <Save className="w-4 h-4" />
-                          <span>Save</span>
+                          <span>{saving ? 'Saving...' : 'Save'}</span>
                         </>
                       ) : (
                         <>
@@ -733,12 +747,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     )}
                     <button
                       onClick={editingProjects ? handleProjectsSave : () => setEditingProjects(true)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                      disabled={saving}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50"
                     >
                       {editingProjects ? (
                         <>
                           <Save className="w-4 h-4" />
-                          <span>Save</span>
+                          <span>{saving ? 'Saving...' : 'Save'}</span>
                         </>
                       ) : (
                         <>
