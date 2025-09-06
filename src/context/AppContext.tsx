@@ -67,7 +67,7 @@ const initialProjects: Project[] = [
   },
   {
     id: '3',
-    title: 'AI Medical Chatbot',
+    title: 'AI Medical Chatbot hii',
     description: 'Developed an intelligent chatbot to assist users with basic medical queries and symptom guidance. Integrated LLM APIs for natural language processing, PostgreSQL for data management, and REST APIs for backend communication. Implemented logging and testing to ensure production-ready performance and reliability.',
     technologies: ['Python 3.6+', 'Langchain', 'FAISS', 'Chainlit', 'PyPDF2', 'Git'],
     image: aiMedicalChatbotImg,
