@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Project, ContactMessage, UserData } from '../types';
 import aiMedicalChatbotImg from '../assets/ai-medical-chatbot.png';
 
@@ -18,7 +18,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const useApp = () => {
+export const useApp = (): AppContextType => {
   const context = useContext(AppContext);
   if (!context) {
     throw new Error('useApp must be used within an AppProvider');
@@ -76,22 +76,63 @@ const initialProjects: Project[] = [
   }
 ];
 
+// Helper functions for localStorage
+function loadFromStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const item = localStorage.getItem(key);
+    console.log(`Loading ${key} from localStorage:`, item);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`Error loading ${key} from localStorage:`, error);
+    return defaultValue;
+  }
+}
+
+function saveToStorage<T>(key: string, value: T): void {
+  try {
+    console.log(`Saving ${key} to localStorage:`, value);
+    localStorage.setItem(key, JSON.stringify(value));
+    console.log(`Successfully saved ${key} to localStorage`);
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error);
+  }
+}
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Initialize from localStorage or use defaults
+  // Load initial data from localStorage or use defaults
   const [projects, setProjects] = useState<Project[]>(() => {
-    const saved = localStorage.getItem('portfolio_projects');
-    return saved ? JSON.parse(saved) : initialProjects;
+    const loaded = loadFromStorage<Project[]>('portfolio-projects', initialProjects);
+    console.log('Initial projects loaded:', loaded);
+    return loaded;
   });
   const [messages, setMessages] = useState<ContactMessage[]>(() => {
-    const saved = localStorage.getItem('portfolio_messages');
-    return saved ? JSON.parse(saved) : [];
+    const loaded = loadFromStorage<ContactMessage[]>('portfolio-messages', []);
+    console.log('Initial messages loaded:', loaded);
+    return loaded;
   });
   const [userData, setUserData] = useState<UserData>(() => {
-    const saved = localStorage.getItem('portfolio_userData');
-    return saved ? JSON.parse(saved) : initialUserData;
+    const loaded = loadFromStorage<UserData>('portfolio-userData', initialUserData);
+    console.log('Initial userData loaded:', loaded);
+    return loaded;
   });
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [chatbotOpen, setChatbotOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [chatbotOpen, setChatbotOpen] = useState<boolean>(false);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    console.log('Projects changed, saving to localStorage:', projects);
+    saveToStorage('portfolio-projects', projects);
+  }, [projects]);
+
+  useEffect(() => {
+    console.log('Messages changed, saving to localStorage:', messages);
+    saveToStorage('portfolio-messages', messages);
+  }, [messages]);
+
+  useEffect(() => {
+    console.log('UserData changed, saving to localStorage:', userData);
+    saveToStorage('portfolio-userData', userData);
+  }, [userData]);
 
   const addMessage = (messageData: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => {
     const newMessage: ContactMessage = {
@@ -100,50 +141,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       timestamp: new Date(),
       isRead: false
     };
-    setMessages(prev => {
-      const updated = [newMessage, ...prev];
-      localStorage.setItem('portfolio_messages', JSON.stringify(updated));
-      return updated;
-    });
+    setMessages(prev => [newMessage, ...prev]);
   };
 
   const markMessageAsRead = (id: string) => {
-    setMessages(prev => {
-      const updated = prev.map(msg => 
+    setMessages(prev =>
+      prev.map(msg =>
         msg.id === id ? { ...msg, isRead: true } : msg
-      );
-      localStorage.setItem('portfolio_messages', JSON.stringify(updated));
-      return updated;
-    });
+      )
+    );
   };
 
   const updateUserData = (data: Partial<UserData>) => {
-    setUserData(prev => {
-      const updated = { ...prev, ...data };
-      localStorage.setItem('portfolio_userData', JSON.stringify(updated));
-      return updated;
-    });
+    setUserData(prev => ({ ...prev, ...data }));
   };
 
   const updateProjects = (newProjects: Project[]) => {
     setProjects(newProjects);
-    localStorage.setItem('portfolio_projects', JSON.stringify(newProjects));
   };
 
   return (
-    <AppContext.Provider value={{
-      projects,
-      messages,
-      userData,
-      isAdmin,
-      chatbotOpen,
-      addMessage,
-      markMessageAsRead,
-      updateUserData,
-      updateProjects,
-      setIsAdmin,
-      setChatbotOpen
-    }}>
+    <AppContext.Provider
+      value={{
+        projects,
+        messages,
+        userData,
+        isAdmin,
+        chatbotOpen,
+        addMessage,
+        markMessageAsRead,
+        updateUserData,
+        updateProjects,
+        setIsAdmin,
+        setChatbotOpen
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

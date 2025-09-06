@@ -340,11 +340,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const handleUserDataSave = useCallback(() => {
     updateUserData(editUserForm);
     setEditingUserData(false);
+    // Force a small delay to ensure state updates properly
+    setTimeout(() => {
+      setEditUserForm(editUserForm);
+    }, 100);
   }, [editUserForm, updateUserData]);
 
   const handleProjectsSave = useCallback(() => {
     updateProjects(editProjectsForm);
     setEditingProjects(false);
+    // Force a small delay to ensure state updates properly
+    setTimeout(() => {
+      setEditProjectsForm(editProjectsForm);
+    }, 100);
   }, [editProjectsForm, updateProjects]);
 
   const handleUserDataCancel = useCallback(() => {
