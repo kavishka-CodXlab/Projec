@@ -76,62 +76,280 @@ const initialProjects: Project[] = [
   }
 ];
 
-// Helper functions for localStorage
+// Helper function to compress base64 images
+function compressBase64Image(base64: string, maxWidth: number = 800, quality: number = 0.8): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        resolve(base64);
+        return;
+      }
+      
+      // Calculate new dimensions
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Draw and compress
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressedBase64);
+    };
+    img.onerror = () => resolve(base64);
+    img.src = base64;
+  });
+}
+
+// Helper function to check if a string is a base64 image
+function isBase64Image(str: string): boolean {
+  return str.startsWith('data:image/') && str.includes('base64,');
+}
+
+// Helper functions for localStorage with proper Date handling and better error management
 function loadFromStorage<T>(key: string, defaultValue: T): T {
   try {
+    // Check if localStorage is available
+    if (typeof Storage === 'undefined') {
+      console.warn('localStorage is not available in this browser');
+      return defaultValue;
+    }
+
     const item = localStorage.getItem(key);
-    console.log(`Loading ${key} from localStorage:`, item);
-    return item ? JSON.parse(item) : defaultValue;
+    if (!item) {
+      console.log(`No data found for ${key}, using default`);
+      return defaultValue;
+    }
+    
+    const parsed = JSON.parse(item);
+    console.log(`Loading ${key} from localStorage:`, parsed);
+    
+    // Special handling for messages to convert timestamp strings back to Date objects
+    if (key === 'portfolio-messages' && Array.isArray(parsed)) {
+      const messagesWithDates = parsed.map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      }));
+      return messagesWithDates as T;
+    }
+    
+    return parsed;
   } catch (error) {
     console.error(`Error loading ${key} from localStorage:`, error);
+    console.log(`Falling back to default value for ${key}`);
     return defaultValue;
   }
 }
 
-function saveToStorage<T>(key: string, value: T): void {
+async function saveToStorage<T>(key: string, value: T): Promise<void> {
   try {
+    // Check if localStorage is available
+    if (typeof Storage === 'undefined') {
+      throw new Error('localStorage is not available in this browser');
+    }
+
     console.log(`Saving ${key} to localStorage:`, value);
-    localStorage.setItem(key, JSON.stringify(value));
+    
+    // Special handling for messages to ensure proper serialization
+    let dataToSave = value;
+    if (key === 'portfolio-messages' && Array.isArray(value)) {
+      dataToSave = value.map((msg: any) => ({
+        ...msg,
+        timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp
+      })) as T;
+    }
+    
+    // Special handling for projects to compress large base64 images
+    if (key === 'portfolio-projects' && Array.isArray(value)) {
+      const projectsWithCompressedImages = await Promise.all(
+        (value as Project[]).map(async (project) => {
+          if (project.image && isBase64Image(project.image)) {
+            try {
+              const compressedImage = await compressBase64Image(project.image);
+              console.log(`Compressed image for project ${project.id}: ${project.image.length} -> ${compressedImage.length} characters`);
+              return { ...project, image: compressedImage };
+            } catch (error) {
+              console.warn(`Failed to compress image for project ${project.id}:`, error);
+              return project;
+            }
+          }
+          return project;
+        })
+      );
+      dataToSave = projectsWithCompressedImages as T;
+    }
+    
+    // Check data size before saving
+    const serialized = JSON.stringify(dataToSave);
+    const sizeInBytes = new Blob([serialized]).size;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    
+    console.log(`Data size for ${key}: ${sizeInMB.toFixed(2)} MB`);
+    
+    // Warn if data is getting large (localStorage has ~5-10MB limit)
+    if (sizeInMB > 4) {
+      console.warn(`Data size for ${key} is large (${sizeInMB.toFixed(2)} MB). Consider reducing data size.`);
+    }
+    
+    // Try to save the data
+    localStorage.setItem(key, serialized);
+    
+    // Verify the save was successful
+    const saved = localStorage.getItem(key);
+    if (!saved || saved !== serialized) {
+      throw new Error('Data was not saved correctly to localStorage');
+    }
+    
     console.log(`Successfully saved ${key} to localStorage`);
   } catch (error) {
     console.error(`Error saving ${key} to localStorage:`, error);
+    
+    // Provide more specific error messages
+    let errorMessage = `Failed to save ${key}. `;
+    
+    if (error instanceof Error) {
+      if (error.message.includes('QuotaExceededError') || error.message.includes('quota')) {
+        errorMessage += 'Storage quota exceeded. Please clear some browser data or reduce the amount of content.';
+      } else if (error.message.includes('not available')) {
+        errorMessage += 'localStorage is not available. Please check your browser settings or try a different browser.';
+      } else if (error.message.includes('not saved correctly')) {
+        errorMessage += 'Data verification failed. Please try again.';
+      } else {
+        errorMessage += `Error: ${error.message}`;
+      }
+    } else {
+      errorMessage += 'Please check your browser\'s storage settings or try refreshing the page.';
+    }
+    
+    // Show user-friendly error message
+    alert(errorMessage);
+    
+    // Also log to console for debugging
+    console.error('Full error details:', error);
+    console.error('Value that failed to save:', value);
   }
 }
 
+// Validation functions
+function validateProject(project: any): project is Project {
+  return (
+    project &&
+    typeof project.id === 'string' &&
+    typeof project.title === 'string' &&
+    typeof project.description === 'string' &&
+    Array.isArray(project.technologies) &&
+    typeof project.image === 'string'
+  );
+}
+
+function validateContactMessage(message: any): message is ContactMessage {
+  return (
+    message &&
+    typeof message.id === 'string' &&
+    typeof message.name === 'string' &&
+    typeof message.email === 'string' &&
+    typeof message.message === 'string' &&
+    (message.timestamp instanceof Date || typeof message.timestamp === 'string') &&
+    typeof message.isRead === 'boolean'
+  );
+}
+
+function validateUserData(data: any): data is UserData {
+  return (
+    data &&
+    typeof data.name === 'string' &&
+    typeof data.title === 'string' &&
+    typeof data.bio === 'string' &&
+    data.education &&
+    Array.isArray(data.skills) &&
+    data.socialLinks
+  );
+}
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Load initial data from localStorage or use defaults
+  // Load initial data from localStorage or use defaults with validation
   const [projects, setProjects] = useState<Project[]>(() => {
     const loaded = loadFromStorage<Project[]>('portfolio-projects', initialProjects);
     console.log('Initial projects loaded:', loaded);
-    return loaded;
+    
+    // Validate loaded data
+    if (Array.isArray(loaded)) {
+      const validProjects = loaded.filter(validateProject);
+      if (validProjects.length !== loaded.length) {
+        console.warn('Some projects failed validation, using valid ones only');
+      }
+      return validProjects.length > 0 ? validProjects : initialProjects;
+    }
+    
+    return initialProjects;
   });
+  
   const [messages, setMessages] = useState<ContactMessage[]>(() => {
     const loaded = loadFromStorage<ContactMessage[]>('portfolio-messages', []);
     console.log('Initial messages loaded:', loaded);
-    return loaded;
+    
+    // Validate loaded data
+    if (Array.isArray(loaded)) {
+      const validMessages = loaded.filter(validateContactMessage);
+      if (validMessages.length !== loaded.length) {
+        console.warn('Some messages failed validation, using valid ones only');
+      }
+      return validMessages;
+    }
+    
+    return [];
   });
+  
   const [userData, setUserData] = useState<UserData>(() => {
     const loaded = loadFromStorage<UserData>('portfolio-userData', initialUserData);
     console.log('Initial userData loaded:', loaded);
-    return loaded;
+    
+    // Validate loaded data
+    if (validateUserData(loaded)) {
+      return loaded;
+    }
+    
+    console.warn('UserData failed validation, using default');
+    return initialUserData;
   });
+  
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [chatbotOpen, setChatbotOpen] = useState<boolean>(false);
 
-  // Save to localStorage whenever data changes
+  // Save to localStorage whenever data changes with debouncing
   useEffect(() => {
-    console.log('Projects changed, saving to localStorage:', projects);
-    saveToStorage('portfolio-projects', projects);
+    const timeoutId = setTimeout(async () => {
+      console.log('Projects changed, saving to localStorage:', projects);
+      await saveToStorage('portfolio-projects', projects);
+    }, 100); // Small delay to prevent excessive saves during rapid changes
+    
+    return () => clearTimeout(timeoutId);
   }, [projects]);
 
   useEffect(() => {
-    console.log('Messages changed, saving to localStorage:', messages);
-    saveToStorage('portfolio-messages', messages);
+    const timeoutId = setTimeout(async () => {
+      console.log('Messages changed, saving to localStorage:', messages);
+      await saveToStorage('portfolio-messages', messages);
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [messages]);
 
   useEffect(() => {
-    console.log('UserData changed, saving to localStorage:', userData);
-    saveToStorage('portfolio-userData', userData);
+    const timeoutId = setTimeout(async () => {
+      console.log('UserData changed, saving to localStorage:', userData);
+      await saveToStorage('portfolio-userData', userData);
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [userData]);
 
   const addMessage = (messageData: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => {
