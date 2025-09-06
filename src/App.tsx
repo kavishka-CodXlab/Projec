@@ -9,7 +9,6 @@ import Skills from './components/Skills';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
-import AdminDashboard from './components/AdminDashboard';
 
 function App() {
   return (
@@ -24,7 +23,6 @@ function App() {
         <Contact />
         <Footer />
         <Chatbot />
-        <AdminDashboard />
       </div>
     </AppProvider>
   );

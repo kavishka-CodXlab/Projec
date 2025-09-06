@@ -3,7 +3,11 @@ import { Settings, Mail, Edit, Save, X, Eye, Trash2, Plus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Project } from '../types';
 
-const AdminDashboard: React.FC = () => {
+interface AdminDashboardProps {
+  onLogout: () => void;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const { 
     isAdmin, 
     setIsAdmin, 
@@ -20,9 +24,13 @@ const AdminDashboard: React.FC = () => {
   const [editingProjects, setEditingProjects] = useState(false);
   const [editUserForm, setEditUserForm] = useState(userData);
   const [editProjectsForm, setEditProjectsForm] = useState(projects);
+  const [isVisible, setIsVisible] = useState(true);
+  const [messageFilter, setMessageFilter] = useState<'all' | 'chatbot' | 'contact'>('all');
 
   // Early return if not admin
-  if (!isAdmin) return null;
+  if (!isAdmin) {
+    return null;
+  }
 
   // Memoized tab configuration
   const tabs = useMemo(() => [
@@ -82,8 +90,12 @@ const AdminDashboard: React.FC = () => {
   }, [updateProject]);
 
   const handleCloseAdmin = useCallback(() => {
-    setIsAdmin(false);
-  }, [setIsAdmin]);
+    setIsVisible(false);
+    // Small delay to allow fade-out animation before logout
+    setTimeout(() => {
+      onLogout();
+    }, 200);
+  }, [onLogout]);
 
   const handleMarkAsRead = useCallback((messageId: string) => {
     markMessageAsRead(messageId);
@@ -91,13 +103,21 @@ const AdminDashboard: React.FC = () => {
 
   // Memoized messages list
   const messagesList = useMemo(() => {
-    if (messages.length === 0) {
+    // Filter messages based on selected filter
+    const filteredMessages = messages.filter((message) => {
+      if (messageFilter === 'all') return true;
+      if (messageFilter === 'chatbot') return message.name === 'Chatbot User';
+      if (messageFilter === 'contact') return message.name !== 'Chatbot User';
+      return true;
+    });
+
+    if (filteredMessages.length === 0) {
       return <p className="text-gray-400">No messages yet.</p>;
     }
 
     return (
       <div className="space-y-4">
-        {messages.map((message) => (
+        {filteredMessages.map((message) => (
           <div
             key={message.id}
             className={`p-4 rounded-lg border transition-colors duration-200 ${
@@ -108,7 +128,14 @@ const AdminDashboard: React.FC = () => {
           >
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="text-white font-semibold">{message.name}</h3>
+                <div className="flex items-center space-x-2 mb-1">
+                  <h3 className="text-white font-semibold">{message.name}</h3>
+                  {message.name === 'Chatbot User' && (
+                    <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded-full text-xs font-medium border border-purple-600/30">
+                      Chatbot
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-400 text-sm">{message.email}</p>
               </div>
               <div className="flex items-center space-x-2">
@@ -131,10 +158,10 @@ const AdminDashboard: React.FC = () => {
         ))}
       </div>
     );
-  }, [messages, handleMarkAsRead]);
+  }, [messages, handleMarkAsRead, messageFilter]);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-50 overflow-y-auto">
+    <div className={`fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-50 overflow-y-auto transition-opacity duration-200 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       <div className="min-h-screen p-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -143,13 +170,21 @@ const AdminDashboard: React.FC = () => {
               <Settings className="w-8 h-8 mr-3 text-blue-400" />
               Admin Dashboard
             </h1>
-            <button
-              onClick={handleCloseAdmin}
-              className="p-2 text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors duration-200"
-              aria-label="Close admin dashboard"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleCloseAdmin}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-semibold"
+              >
+                Logout
+              </button>
+              <button
+                onClick={handleCloseAdmin}
+                className="p-2 text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors duration-200"
+                aria-label="Close admin dashboard"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -177,7 +212,41 @@ const AdminDashboard: React.FC = () => {
           {/* Messages Tab */}
           {activeTab === 'messages' && (
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6">Contact Messages</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Contact Messages</h2>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setMessageFilter('all')}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
+                      messageFilter === 'all'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setMessageFilter('chatbot')}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
+                      messageFilter === 'chatbot'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    Chatbot
+                  </button>
+                  <button
+                    onClick={() => setMessageFilter('contact')}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 ${
+                      messageFilter === 'contact'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    Contact Form
+                  </button>
+                </div>
+              </div>
               {messagesList}
             </div>
           )}

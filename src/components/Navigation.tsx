@@ -13,11 +13,11 @@ const Navigation: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { setIsAdmin } = useApp();
+  const { isAdmin, setIsAdmin } = useApp();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'admin123') {
+    if (username === 'admin' && password === '123') {
       setIsAuthenticated(true);
       setShowLogin(false);
       setShowAdmin(true);
@@ -183,21 +183,8 @@ const Navigation: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Admin Dashboard Modal */}
-      {showAdmin && isAuthenticated && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleLogout} />
-          <div className="relative z-10 w-full max-w-3xl">
-            <AdminDashboard />
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-semibold mt-4"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Admin Dashboard */}
+      {showAdmin && isAuthenticated && <AdminDashboard onLogout={handleLogout} />}
       {/* Gradient Animation Keyframes */}
       <style>{`
         @keyframes gradient-x {

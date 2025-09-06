@@ -36,3 +36,40 @@ export interface UserData {
     whatsapp: string;
   };
 }
+
+// Chatbot conversation flow types
+export interface ChatMessage {
+  id: string;
+  text: string;
+  isBot: boolean;
+  timestamp: Date;
+  quickReplies?: string[];
+  isTyping?: boolean;
+}
+
+export interface Slot {
+  name: string;
+  prompt: string;
+  type: 'string' | 'email' | 'url' | 'file';
+  options?: string[];
+  required?: boolean;
+}
+
+export interface Intent {
+  name: string;
+  training_phrases: string[];
+  responses: string[];
+  quick_replies?: string[];
+  slots?: Slot[];
+  confirmation?: string;
+  final_response?: string;
+}
+
+export interface ConversationState {
+  currentIntent: string | null;
+  collectedSlots: Record<string, any>;
+  isWaitingForSlot: boolean;
+  currentSlot: string | null;
+  isConfirming: boolean;
+  conversationHistory: ChatMessage[];
+}
