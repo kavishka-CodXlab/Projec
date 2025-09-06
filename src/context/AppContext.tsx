@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Project, ContactMessage, UserData } from '../types';
+import aiMedicalChatbotImg from '../assets/ai-medical-chatbot.png';
 
 interface AppContextType {
   projects: Project[];
@@ -69,7 +70,7 @@ const initialProjects: Project[] = [
     title: 'AI Medical Chatbot',
     description: 'Developed an intelligent chatbot to assist users with basic medical queries and symptom guidance. Integrated LLM APIs for natural language processing, PostgreSQL for data management, and REST APIs for backend communication. Implemented logging and testing to ensure production-ready performance and reliability.',
     technologies: ['Python 3.6+', 'Langchain', 'FAISS', 'Chainlit', 'PyPDF2', 'Git'],
-    image: '/ai-medical-chatbot.png',
+    image: aiMedicalChatbotImg,
     githubUrl: 'https://github.com/kavishka-CodXlab/medbot-2.0',
     liveUrl: 'https://example.com'
   }

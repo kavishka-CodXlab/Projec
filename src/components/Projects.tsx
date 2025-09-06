@@ -7,6 +7,7 @@ const Projects: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
