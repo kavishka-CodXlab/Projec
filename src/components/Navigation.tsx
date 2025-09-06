@@ -69,10 +69,10 @@ const Navigation: React.FC = () => {
       <div className="absolute left-0 top-0 w-full h-1 z-50">
         <div className="w-full h-full animate-gradient-x bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-80 blur-sm"></div>
       </div>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 relative">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex flex-col md:flex-row justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center gap-2 mb-2 md:mb-0">
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
+            <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
               <button
                 onClick={() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })}
                 className="inline-flex items-center space-x-1 group focus:outline-none"
