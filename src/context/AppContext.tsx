@@ -69,7 +69,7 @@ const initialProjects: Project[] = [
     title: 'AI Medical Chatbot',
     description: 'Developed an intelligent chatbot to assist users with basic medical queries and symptom guidance. Integrated LLM APIs for natural language processing, PostgreSQL for data management, and REST APIs for backend communication. Implemented logging and testing to ensure production-ready performance and reliability.',
     technologies: ['Python 3.6+', 'Langchain', 'FAISS', 'Chainlit', 'PyPDF2', 'Git'],
-    image: '/src/assets/ai-medical-chatbot.png',
+    image: '/ai-medical-chatbot.png',
     githubUrl: 'https://github.com/kavishka-CodXlab/medbot-2.0',
     liveUrl: 'https://example.com'
   }
