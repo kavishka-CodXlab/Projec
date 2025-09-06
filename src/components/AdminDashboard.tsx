@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Settings, Mail, Edit, Save, X, Eye, Trash2, Plus, Upload, Image as ImageIcon, GripVertical } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Project } from '../types';
@@ -305,6 +305,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [editingProjects, setEditingProjects] = useState(false);
   const [editUserForm, setEditUserForm] = useState(userData);
   const [editProjectsForm, setEditProjectsForm] = useState(projects);
+
+  // Sync local state with global state when they change
+  useEffect(() => {
+    setEditUserForm(userData);
+  }, [userData]);
+
+  useEffect(() => {
+    setEditProjectsForm(projects);
+  }, [projects]);
   const [isVisible, setIsVisible] = useState(true);
   const [messageFilter, setMessageFilter] = useState<'all' | 'chatbot' | 'contact'>('all');
 

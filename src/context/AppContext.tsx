@@ -77,9 +77,19 @@ const initialProjects: Project[] = [
 ];
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
-  const [userData, setUserData] = useState<UserData>(initialUserData);
+  // Initialize from localStorage or use defaults
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const saved = localStorage.getItem('portfolio_projects');
+    return saved ? JSON.parse(saved) : initialProjects;
+  });
+  const [messages, setMessages] = useState<ContactMessage[]>(() => {
+    const saved = localStorage.getItem('portfolio_messages');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [userData, setUserData] = useState<UserData>(() => {
+    const saved = localStorage.getItem('portfolio_userData');
+    return saved ? JSON.parse(saved) : initialUserData;
+  });
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatbotOpen, setChatbotOpen] = useState(false);
 
@@ -90,21 +100,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       timestamp: new Date(),
       isRead: false
     };
-    setMessages(prev => [newMessage, ...prev]);
+    setMessages(prev => {
+      const updated = [newMessage, ...prev];
+      localStorage.setItem('portfolio_messages', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const markMessageAsRead = (id: string) => {
-    setMessages(prev => prev.map(msg => 
-      msg.id === id ? { ...msg, isRead: true } : msg
-    ));
+    setMessages(prev => {
+      const updated = prev.map(msg => 
+        msg.id === id ? { ...msg, isRead: true } : msg
+      );
+      localStorage.setItem('portfolio_messages', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const updateUserData = (data: Partial<UserData>) => {
-    setUserData(prev => ({ ...prev, ...data }));
+    setUserData(prev => {
+      const updated = { ...prev, ...data };
+      localStorage.setItem('portfolio_userData', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const updateProjects = (newProjects: Project[]) => {
     setProjects(newProjects);
+    localStorage.setItem('portfolio_projects', JSON.stringify(newProjects));
   };
 
   return (
