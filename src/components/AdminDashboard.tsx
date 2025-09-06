@@ -297,11 +297,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     userData, 
     updateUserData, 
     projects, 
-    updateProjects,
-    saveUserData,
-    saveProjects,
-    loading,
-    error
+    updateProjects
   } = useApp();
   
   const [activeTab, setActiveTab] = useState<'messages' | 'content'>('messages');
@@ -346,27 +342,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     try {
       setSaving(true);
       updateUserData(editUserForm);
-      await saveUserData();
       setEditingUserData(false);
     } catch (err) {
       console.error('Failed to save user data:', err);
     } finally {
       setSaving(false);
     }
-  }, [editUserForm, updateUserData, saveUserData]);
+  }, [editUserForm, updateUserData]);
 
   const handleProjectsSave = useCallback(async () => {
     try {
       setSaving(true);
       updateProjects(editProjectsForm);
-      await saveProjects();
       setEditingProjects(false);
     } catch (err) {
       console.error('Failed to save projects:', err);
     } finally {
       setSaving(false);
     }
-  }, [editProjectsForm, updateProjects, saveProjects]);
+  }, [editProjectsForm, updateProjects]);
 
   const handleUserDataCancel = useCallback(() => {
     setEditUserForm(userData);
