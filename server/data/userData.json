@@ -1,0 +1,30 @@
+{
+  "name": "Your Name",
+  "title": "Computer Science Student",
+  "bio": "I'm a passionate Computer Science undergraduate student at the University of Bedfordshire, dedicated to learning and creating innovative technology solutions.",
+  "education": {
+    "degree": "Bachelor of Science in Computer Science",
+    "university": "University of Bedfordshire",
+    "year": "2021-2025",
+    "description": "Studying modern computer science concepts including software engineering, algorithms, data structures, and emerging technologies."
+  },
+  "skills": [
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Node.js",
+    "Python",
+    "Java",
+    "HTML/CSS",
+    "Git",
+    "SQL",
+    "MongoDB"
+  ],
+  "socialLinks": {
+    "github": "https://github.com/kavishka-CodXlab",
+    "linkedin": "https://www.linkedin.com/in/kavishka-thilakarathna",
+    "facebook": "https://www.facebook.com/profile.php?id=100076249214752",
+    "instagram": "https://www.instagram.com/kavii_shkaa/",
+    "whatsapp": "https://wa.me/"
+  }
+}

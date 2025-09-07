@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "title": "E-Commerce Platform",
+    "description": "A full-stack e-commerce solution with user authentication, product management, and payment integration.",
+    "technologies": [
+      "React",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "Stripe"
+    ],
+    "image": "https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg",
+    "githubUrl": "https://github.com/kavishka-CodXlab",
+    "liveUrl": "https://example.com"
+  },
+  {
+    "id": "2",
+    "title": "Task Management App",
+    "description": "A collaborative task management application with real-time updates and team collaboration features.",
+    "technologies": [
+      "React",
+      "TypeScript",
+      "Firebase",
+      "Material-UI"
+    ],
+    "image": "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg",
+    "githubUrl": "https://github.com/kavishka-CodXlab",
+    "liveUrl": "https://example.com"
+  },
+  {
+    "id": "3",
+    "title": "AI Medical Chatbot",
+    "description": "Developed an intelligent chatbot to assist users with basic medical queries and symptom guidance. Integrated LLM APIs for natural language processing, PostgreSQL for data management, and REST APIs for backend communication. Implemented logging and testing to ensure production-ready performance and reliability.",
+    "technologies": [
+      "Python 3.6+",
+      "Langchain",
+      "FAISS",
+      "Chainlit",
+      "PyPDF2",
+      "Git"
+    ],
+    "image": "/uploads/ai-medical-chatbot.png",
+    "githubUrl": "https://github.com/kavishka-CodXlab/medbot-2.0",
+    "liveUrl": "https://example.com"
+  }
+]

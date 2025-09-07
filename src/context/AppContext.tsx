@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Project, ContactMessage, UserData } from '../types';
-import aiMedicalChatbotImg from '../assets/ai-medical-chatbot.png';
+import { projectsService, messagesService, userDataService } from '../services/firebaseService';
 
 interface AppContextType {
   projects: Project[];
@@ -8,12 +8,19 @@ interface AppContextType {
   userData: UserData;
   isAdmin: boolean;
   chatbotOpen: boolean;
-  addMessage: (message: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => void;
-  markMessageAsRead: (id: string) => void;
+  loading: boolean;
+  error: string | null;
+  addMessage: (message: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => Promise<void>;
+  markMessageAsRead: (id: string) => Promise<void>;
   updateUserData: (data: Partial<UserData>) => void;
   updateProjects: (projects: Project[]) => void;
+  addProject: (project: Omit<Project, 'id' | 'image'>, imageFile: File) => Promise<void>;
+  updateProject: (id: string, updates: Partial<Project>, imageFile?: File) => Promise<void>;
+  deleteProject: (project: Project) => Promise<void>;
   setIsAdmin: (isAdmin: boolean) => void;
   setChatbotOpen: (open: boolean) => void;
+  saveUserData: () => Promise<void>;
+  saveProjects: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -26,348 +33,193 @@ export const useApp = (): AppContextType => {
   return context;
 };
 
-const initialUserData: UserData = {
-  name: "Your Name",
-  title: "Computer Science Student",
-  bio: "I'm a passionate Computer Science undergraduate student at the University of Bedfordshire, dedicated to learning and creating innovative technology solutions.",
-  education: {
-    degree: "Bachelor of Science in Computer Science",
-    university: "University of Bedfordshire",
-    year: "2021-2025",
-    description: "Studying modern computer science concepts including software engineering, algorithms, data structures, and emerging technologies."
-  },
-  skills: ["JavaScript", "TypeScript", "React", "Node.js", "Python", "Java", "HTML/CSS", "Git", "SQL", "MongoDB"],
-  socialLinks: {
-    github: "https://github.com/kavishka-CodXlab",
-    linkedin: "https://www.linkedin.com/in/kavishka-thilakarathna",
-    facebook: "https://www.facebook.com/profile.php?id=100076249214752",
-    instagram: "https://www.instagram.com/kavii_shkaa/",
-    whatsapp: "https://wa.me/"
-  }
-};
-
-const initialProjects: Project[] = [
+// Fallback data for when Firebase is not available
+const fallbackProjects: Project[] = [
   {
     id: '1',
-    title: 'E-Commerce Platform',
-    description: 'A full-stack e-commerce solution with user authentication, product management, and payment integration.',
-    technologies: ['React', 'Node.js', 'Express', 'MongoDB', 'Stripe'],
-    image: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
-    githubUrl: 'https://github.com/kavishka-CodXlab',
-    liveUrl: 'https://example.com'
+    title: 'AI Medical Chatbot',
+    description: 'An intelligent medical assistant powered by AI to help users with health-related queries.',
+    technologies: ['React', 'Node.js', 'OpenAI API', 'MongoDB'],
+    image: '/ai-medical-chatbot.png',
+    githubUrl: 'https://github.com/yourusername/ai-medical-chatbot',
+    liveUrl: 'https://ai-medical-chatbot.vercel.app'
   },
   {
     id: '2',
-    title: 'Task Management App',
-    description: 'A collaborative task management application with real-time updates and team collaboration features.',
-    technologies: ['React', 'TypeScript', 'Firebase', 'Material-UI'],
-    image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg',
-    githubUrl: 'https://github.com/kavishka-CodXlab',
-    liveUrl: 'https://example.com'
-  },
-  {
-    id: '3',
-    title: 'AI Medical Chatbot',
-    description: 'Developed an intelligent chatbot to assist users with basic medical queries and symptom guidance. Integrated LLM APIs for natural language processing, PostgreSQL for data management, and REST APIs for backend communication. Implemented logging and testing to ensure production-ready performance and reliability.',
-    technologies: ['Python 3.6+', 'Langchain', 'FAISS', 'Chainlit', 'PyPDF2', 'Git'],
-    image: aiMedicalChatbotImg,
-    githubUrl: 'https://github.com/kavishka-CodXlab/medbot-2.0',
-    liveUrl: 'https://example.com'
+    title: 'E-commerce Platform',
+    description: 'A full-stack e-commerce solution with payment integration and admin dashboard.',
+    technologies: ['React', 'Express.js', 'Stripe', 'PostgreSQL'],
+    image: '/ecommerce.png',
+    githubUrl: 'https://github.com/yourusername/ecommerce',
+    liveUrl: 'https://ecommerce-demo.vercel.app'
   }
 ];
 
-// Helper function to compress base64 images
-function compressBase64Image(base64: string, maxWidth: number = 800, quality: number = 0.8): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      if (!ctx) {
-        resolve(base64);
-        return;
-      }
-      
-      // Calculate new dimensions
-      let { width, height } = img;
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      
-      // Draw and compress
-      ctx.drawImage(img, 0, 0, width, height);
-      const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-      resolve(compressedBase64);
-    };
-    img.onerror = () => resolve(base64);
-    img.src = base64;
-  });
-}
-
-// Helper function to check if a string is a base64 image
-function isBase64Image(str: string): boolean {
-  return str.startsWith('data:image/') && str.includes('base64,');
-}
-
-// Helper functions for localStorage with proper Date handling and better error management
-function loadFromStorage<T>(key: string, defaultValue: T): T {
-  try {
-    // Check if localStorage is available
-    if (typeof Storage === 'undefined') {
-      console.warn('localStorage is not available in this browser');
-      return defaultValue;
-    }
-
-    const item = localStorage.getItem(key);
-    if (!item) {
-      console.log(`No data found for ${key}, using default`);
-      return defaultValue;
-    }
-    
-    const parsed = JSON.parse(item);
-    console.log(`Loading ${key} from localStorage:`, parsed);
-    
-    // Special handling for messages to convert timestamp strings back to Date objects
-    if (key === 'portfolio-messages' && Array.isArray(parsed)) {
-      const messagesWithDates = parsed.map((msg: any) => ({
-        ...msg,
-        timestamp: new Date(msg.timestamp)
-      }));
-      return messagesWithDates as T;
-    }
-    
-    return parsed;
-  } catch (error) {
-    console.error(`Error loading ${key} from localStorage:`, error);
-    console.log(`Falling back to default value for ${key}`);
-    return defaultValue;
+const fallbackUserData: UserData = {
+  name: 'Kavishka Thilakarathna',
+  title: 'Full Stack Developer',
+  bio: 'Passionate developer creating innovative solutions with modern technologies.',
+  education: {
+    degree: 'Bachelor of Science in Computer Science',
+    university: 'University of Colombo',
+    year: '2023',
+    description: 'Specialized in software engineering and web development'
+  },
+  skills: ['React', 'Node.js', 'TypeScript', 'Python', 'MongoDB', 'Firebase'],
+  socialLinks: {
+    github: 'https://github.com/yourusername',
+    linkedin: 'https://linkedin.com/in/yourusername',
+    facebook: '',
+    instagram: '',
+    whatsapp: ''
   }
-}
+};
 
-async function saveToStorage<T>(key: string, value: T): Promise<void> {
-  try {
-    // Check if localStorage is available
-    if (typeof Storage === 'undefined') {
-      throw new Error('localStorage is not available in this browser');
-    }
-
-    console.log(`Saving ${key} to localStorage:`, value);
-    
-    // Special handling for messages to ensure proper serialization
-    let dataToSave = value;
-    if (key === 'portfolio-messages' && Array.isArray(value)) {
-      dataToSave = value.map((msg: any) => ({
-        ...msg,
-        timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp
-      })) as T;
-    }
-    
-    // Special handling for projects to compress large base64 images
-    if (key === 'portfolio-projects' && Array.isArray(value)) {
-      const projectsWithCompressedImages = await Promise.all(
-        (value as Project[]).map(async (project) => {
-          if (project.image && isBase64Image(project.image)) {
-            try {
-              const compressedImage = await compressBase64Image(project.image);
-              console.log(`Compressed image for project ${project.id}: ${project.image.length} -> ${compressedImage.length} characters`);
-              return { ...project, image: compressedImage };
-            } catch (error) {
-              console.warn(`Failed to compress image for project ${project.id}:`, error);
-              return project;
-            }
-          }
-          return project;
-        })
-      );
-      dataToSave = projectsWithCompressedImages as T;
-    }
-    
-    // Check data size before saving
-    const serialized = JSON.stringify(dataToSave);
-    const sizeInBytes = new Blob([serialized]).size;
-    const sizeInMB = sizeInBytes / (1024 * 1024);
-    
-    console.log(`Data size for ${key}: ${sizeInMB.toFixed(2)} MB`);
-    
-    // Warn if data is getting large (localStorage has ~5-10MB limit)
-    if (sizeInMB > 4) {
-      console.warn(`Data size for ${key} is large (${sizeInMB.toFixed(2)} MB). Consider reducing data size.`);
-    }
-    
-    // Try to save the data
-    localStorage.setItem(key, serialized);
-    
-    // Verify the save was successful
-    const saved = localStorage.getItem(key);
-    if (!saved || saved !== serialized) {
-      throw new Error('Data was not saved correctly to localStorage');
-    }
-    
-    console.log(`Successfully saved ${key} to localStorage`);
-  } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error);
-    
-    // Provide more specific error messages
-    let errorMessage = `Failed to save ${key}. `;
-    
-    if (error instanceof Error) {
-      if (error.message.includes('QuotaExceededError') || error.message.includes('quota')) {
-        errorMessage += 'Storage quota exceeded. Please clear some browser data or reduce the amount of content.';
-      } else if (error.message.includes('not available')) {
-        errorMessage += 'localStorage is not available. Please check your browser settings or try a different browser.';
-      } else if (error.message.includes('not saved correctly')) {
-        errorMessage += 'Data verification failed. Please try again.';
-      } else {
-        errorMessage += `Error: ${error.message}`;
-      }
-    } else {
-      errorMessage += 'Please check your browser\'s storage settings or try refreshing the page.';
-    }
-    
-    // Show user-friendly error message
-    alert(errorMessage);
-    
-    // Also log to console for debugging
-    console.error('Full error details:', error);
-    console.error('Value that failed to save:', value);
-  }
-}
-
-// Validation functions
-function validateProject(project: any): project is Project {
-  return (
-    project &&
-    typeof project.id === 'string' &&
-    typeof project.title === 'string' &&
-    typeof project.description === 'string' &&
-    Array.isArray(project.technologies) &&
-    typeof project.image === 'string'
-  );
-}
-
-function validateContactMessage(message: any): message is ContactMessage {
-  return (
-    message &&
-    typeof message.id === 'string' &&
-    typeof message.name === 'string' &&
-    typeof message.email === 'string' &&
-    typeof message.message === 'string' &&
-    (message.timestamp instanceof Date || typeof message.timestamp === 'string') &&
-    typeof message.isRead === 'boolean'
-  );
-}
-
-function validateUserData(data: any): data is UserData {
-  return (
-    data &&
-    typeof data.name === 'string' &&
-    typeof data.title === 'string' &&
-    typeof data.bio === 'string' &&
-    data.education &&
-    Array.isArray(data.skills) &&
-    data.socialLinks
-  );
-}
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Load initial data from localStorage or use defaults with validation
-  const [projects, setProjects] = useState<Project[]>(() => {
-    const loaded = loadFromStorage<Project[]>('portfolio-projects', initialProjects);
-    console.log('Initial projects loaded:', loaded);
-    
-    // Validate loaded data
-    if (Array.isArray(loaded)) {
-      const validProjects = loaded.filter(validateProject);
-      if (validProjects.length !== loaded.length) {
-        console.warn('Some projects failed validation, using valid ones only');
-      }
-      return validProjects.length > 0 ? validProjects : initialProjects;
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [userData, setUserData] = useState<UserData>({
+    name: '',
+    title: '',
+    bio: '',
+    education: {
+      degree: '',
+      university: '',
+      year: '',
+      description: ''
+    },
+    skills: [],
+    socialLinks: {
+      github: '',
+      linkedin: '',
+      facebook: '',
+      instagram: '',
+      whatsapp: ''
     }
-    
-    return initialProjects;
   });
-  
-  const [messages, setMessages] = useState<ContactMessage[]>(() => {
-    const loaded = loadFromStorage<ContactMessage[]>('portfolio-messages', []);
-    console.log('Initial messages loaded:', loaded);
-    
-    // Validate loaded data
-    if (Array.isArray(loaded)) {
-      const validMessages = loaded.filter(validateContactMessage);
-      if (validMessages.length !== loaded.length) {
-        console.warn('Some messages failed validation, using valid ones only');
-      }
-      return validMessages;
-    }
-    
-    return [];
-  });
-  
-  const [userData, setUserData] = useState<UserData>(() => {
-    const loaded = loadFromStorage<UserData>('portfolio-userData', initialUserData);
-    console.log('Initial userData loaded:', loaded);
-    
-    // Validate loaded data
-    if (validateUserData(loaded)) {
-      return loaded;
-    }
-    
-    console.warn('UserData failed validation, using default');
-    return initialUserData;
-  });
-  
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [chatbotOpen, setChatbotOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Save to localStorage whenever data changes with debouncing
-  useEffect(() => {
-    const timeoutId = setTimeout(async () => {
-      console.log('Projects changed, saving to localStorage:', projects);
-      await saveToStorage('portfolio-projects', projects);
-    }, 100); // Small delay to prevent excessive saves during rapid changes
-    
-    return () => clearTimeout(timeoutId);
-  }, [projects]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(async () => {
-      console.log('Messages changed, saving to localStorage:', messages);
-      await saveToStorage('portfolio-messages', messages);
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [messages]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(async () => {
-      console.log('UserData changed, saving to localStorage:', userData);
-      await saveToStorage('portfolio-userData', userData);
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [userData]);
-
-  const addMessage = (messageData: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => {
-    const newMessage: ContactMessage = {
-      ...messageData,
-      id: Date.now().toString(),
-      timestamp: new Date(),
-      isRead: false
-    };
-    setMessages(prev => [newMessage, ...prev]);
+  // Test Firebase connection
+  const testFirebaseConnection = async (): Promise<boolean> => {
+    try {
+      console.log('🔥 Testing Firebase connection...');
+      await projectsService.getProjects();
+      console.log('✅ Firebase connected successfully');
+      return true;
+    } catch (error) {
+      console.warn('⚠️ Firebase connection failed:', error);
+      return false;
+    }
   };
 
-  const markMessageAsRead = (id: string) => {
-    setMessages(prev =>
-      prev.map(msg =>
-        msg.id === id ? { ...msg, isRead: true } : msg
-      )
-    );
+  // Load data from Firebase on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log('🔄 Loading data...');
+
+        // Test Firebase connection first
+        const isFirebaseConnected = await testFirebaseConnection();
+
+        if (isFirebaseConnected) {
+          // Load from Firebase
+          console.log('📡 Loading data from Firebase...');
+          const [projectsData, messagesData, userDataData] = await Promise.all([
+            projectsService.getProjects(),
+            messagesService.getMessages(),
+            userDataService.getUserData()
+          ]);
+
+          console.log('✅ Firebase data loaded:', { 
+            projects: projectsData.length, 
+            messages: messagesData.length 
+          });
+
+          setProjects(projectsData.length > 0 ? projectsData : fallbackProjects);
+          setMessages(messagesData);
+          if (userDataData) {
+            setUserData(userDataData);
+          }
+        } else {
+          // Use fallback data
+          console.log('📦 Using fallback data');
+          setProjects(fallbackProjects);
+          setMessages([]);
+          setUserData(fallbackUserData);
+          setError('Firebase connection failed. Using offline data.');
+        }
+      } catch (err) {
+        console.error('❌ Error loading data:', err);
+        console.log('📦 Falling back to default data');
+        
+        // Use fallback data on error
+        setProjects(fallbackProjects);
+        setMessages([]);
+        setUserData(fallbackUserData);
+        setError('Using offline data. Firebase connection failed.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+
+    // Set up real-time listeners
+    const unsubscribeProjects = projectsService.subscribeToProjects((projects) => {
+      console.log('📡 Projects updated:', projects.length);
+      setProjects(projects);
+    });
+
+    const unsubscribeMessages = messagesService.subscribeToMessages((messages) => {
+      console.log('📡 Messages updated:', messages.length);
+      setMessages(messages);
+    });
+
+    const unsubscribeUserData = userDataService.subscribeToUserData((userData) => {
+      console.log('📡 User data updated');
+      if (userData) {
+        setUserData(userData);
+      }
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      unsubscribeProjects();
+      unsubscribeMessages();
+      unsubscribeUserData();
+    };
+  }, []);
+
+  const addMessage = async (messageData: Omit<ContactMessage, 'id' | 'timestamp' | 'isRead'>) => {
+    try {
+      console.log('💬 Adding message:', messageData);
+      await messagesService.addMessage(messageData);
+      console.log('✅ Message added successfully');
+    } catch (err) {
+      console.error('❌ Error adding message:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add message';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  const markMessageAsRead = async (id: string) => {
+    try {
+      console.log('👁️ Marking message as read:', id);
+      await messagesService.markAsRead(id);
+      console.log('✅ Message marked as read');
+    } catch (err) {
+      console.error('❌ Error marking message as read:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to mark message as read';
+      setError(errorMessage);
+      throw err;
+    }
   };
 
   const updateUserData = (data: Partial<UserData>) => {
@@ -378,6 +230,73 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setProjects(newProjects);
   };
 
+  const addProject = async (projectData: Omit<Project, 'id' | 'image'>, imageFile: File) => {
+    try {
+      console.log('🚀 Adding new project with image...');
+      await projectsService.addProjectWithImage(projectData, imageFile);
+      console.log('✅ Project added successfully');
+    } catch (err) {
+      console.error('❌ Error adding project:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add project';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  const updateProject = async (id: string, updates: Partial<Project>, imageFile?: File) => {
+    try {
+      console.log('🔄 Updating project...');
+      await projectsService.updateProjectWithImage(id, updates, imageFile);
+      console.log('✅ Project updated successfully');
+    } catch (err) {
+      console.error('❌ Error updating project:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update project';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  const deleteProject = async (project: Project) => {
+    try {
+      console.log('🗑️ Deleting project...');
+      await projectsService.deleteProjectWithImage(project);
+      console.log('✅ Project deleted successfully');
+    } catch (err) {
+      console.error('❌ Error deleting project:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete project';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  const saveUserData = async () => {
+    try {
+      setError(null);
+      console.log('💾 Saving user data...');
+      await userDataService.updateUserData(userData);
+      console.log('✅ User data saved successfully');
+    } catch (err) {
+      console.error('❌ Error saving user data:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save user data';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  const saveProjects = async () => {
+    try {
+      setError(null);
+      console.log(' Saving projects...');
+      await projectsService.updateProjects(projects);
+      console.log('✅ Projects saved successfully');
+    } catch (err) {
+      console.error('❌ Error saving projects:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save projects';
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -386,12 +305,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         userData,
         isAdmin,
         chatbotOpen,
+        loading,
+        error,
         addMessage,
         markMessageAsRead,
         updateUserData,
         updateProjects,
+        addProject,
+        updateProject,
+        deleteProject,
         setIsAdmin,
-        setChatbotOpen
+        setChatbotOpen,
+        saveUserData,
+        saveProjects
       }}
     >
       {children}
