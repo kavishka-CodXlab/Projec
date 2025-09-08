@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Code, Github, Linkedin, Facebook, Instagram, MessageCircle } from 'lucide-react';
+import { Heart, Code, Github, Linkedin, Facebook, Instagram } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const Footer: React.FC = () => {
@@ -10,7 +10,6 @@ const Footer: React.FC = () => {
     { icon: Linkedin, href: userData.socialLinks.linkedin, label: 'LinkedIn' },
     { icon: Facebook, href: userData.socialLinks.facebook, label: 'Facebook' },
     { icon: Instagram, href: userData.socialLinks.instagram, label: 'Instagram' },
-    { icon: MessageCircle, href: userData.socialLinks.whatsapp, label: 'WhatsApp' },
   ];
 
   return (

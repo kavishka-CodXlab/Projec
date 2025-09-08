@@ -41,7 +41,7 @@ const fallbackProjects: Project[] = [
     description: 'An intelligent medical assistant powered by AI to help users with health-related queries.',
     technologies: ['React', 'Node.js', 'OpenAI API', 'MongoDB'],
     image: '/ai-medical-chatbot.png',
-    githubUrl: 'https://github.com/yourusername/ai-medical-chatbot',
+    githubUrl: 'https://github.com/kavishka-CodXlab/ai-medical-chatbot',
     liveUrl: 'https://ai-medical-chatbot.vercel.app'
   },
   {
@@ -50,25 +50,25 @@ const fallbackProjects: Project[] = [
     description: 'A full-stack e-commerce solution with payment integration and admin dashboard.',
     technologies: ['React', 'Express.js', 'Stripe', 'PostgreSQL'],
     image: '/ecommerce.png',
-    githubUrl: 'https://github.com/yourusername/ecommerce',
+    githubUrl: 'https://github.com/kavishka-CodXlab/ecommerce',
     liveUrl: 'https://ecommerce-demo.vercel.app'
   }
 ];
 
 const fallbackUserData: UserData = {
-  name: 'Kavishka Thilakarathna',
-  title: 'Full Stack Developer',
-  bio: 'Passionate developer creating innovative solutions with modern technologies.',
+  name: '',
+  title: '',
+  bio: '',
   education: {
-    degree: 'Bachelor of Science in Computer Science',
-    university: 'University of Colombo',
-    year: '2023',
-    description: 'Specialized in software engineering and web development'
+    degree: '',
+    university: '',
+    year: '',
+    description: ''
   },
-  skills: ['React', 'Node.js', 'TypeScript', 'Python', 'MongoDB', 'Firebase'],
+  skills: [],
   socialLinks: {
-    github: 'https://github.com/yourusername',
-    linkedin: 'https://linkedin.com/in/yourusername',
+    github: '',
+    linkedin: '',
     facebook: '',
     instagram: '',
     whatsapp: ''
@@ -91,10 +91,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     },
     skills: [],
     socialLinks: {
-      github: '',
-      linkedin: '',
-      facebook: '',
-      instagram: '',
+      github: 'https://github.com/kavishka-CodXlab',
+      linkedin: 'https://www.linkedin.com/in/kavishka-thilakarathna/',
+      facebook: 'https://www.facebook.com/profile.php?id=100076249214752',
+      instagram: 'https://www.instagram.com/kavii_shkaa/',
       whatsapp: ''
     }
   });
@@ -106,12 +106,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Test Firebase connection
   const testFirebaseConnection = async (): Promise<boolean> => {
     try {
-      console.log('🔥 Testing Firebase connection...');
+      console.log(' Testing Firebase connection...');
       await projectsService.getProjects();
-      console.log('✅ Firebase connected successfully');
+      console.log(' Firebase connected successfully');
       return true;
     } catch (error) {
-      console.warn('⚠️ Firebase connection failed:', error);
+      console.warn(' Firebase connection failed:', error);
       return false;
     }
   };
@@ -136,7 +136,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             userDataService.getUserData()
           ]);
 
-          console.log('✅ Firebase data loaded:', { 
+          console.log('Firebase data loaded:', { 
             projects: projectsData.length, 
             messages: messagesData.length 
           });
@@ -148,15 +148,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           }
         } else {
           // Use fallback data
-          console.log('📦 Using fallback data');
+          console.log(' Using fallback data');
           setProjects(fallbackProjects);
           setMessages([]);
           setUserData(fallbackUserData);
           setError('Firebase connection failed. Using offline data.');
         }
       } catch (err) {
-        console.error('❌ Error loading data:', err);
-        console.log('📦 Falling back to default data');
+        console.error(' Error loading data:', err);
+        console.log(' Falling back to default data');
         
         // Use fallback data on error
         setProjects(fallbackProjects);
@@ -182,7 +182,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     const unsubscribeUserData = userDataService.subscribeToUserData((userData) => {
-      console.log('📡 User data updated');
+      console.log(' User data updated');
       if (userData) {
         setUserData(userData);
       }
