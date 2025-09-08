@@ -94,14 +94,14 @@ const Hero: React.FC = () => {
 
       <div className="relative z-10 text-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-5">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-5">
             <span className="block text-white mb-1 sm:mb-1.5">Hello, I'm</span>
             <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
               Kavishka Thilakarathna
             </span>
           </h1>
           
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 mb-5 sm:mb-6 md:mb-7 max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-5 sm:mb-6 md:mb-7 max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto leading-relaxed">
             Computer Science Student & Aspiring Software Developer
           </p>
           
@@ -126,7 +126,7 @@ const Hero: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <button
               onClick={scrollToAbout}
-              className="px-6 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold text-sm sm:text-base md:text-lg hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
+              className="px-6 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold text-base sm:text-lg md:text-xl hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
             >
               Explore My Work
             </button>
@@ -137,7 +137,7 @@ const Hero: React.FC = () => {
                 const element = document.querySelector('#contact');
                 if (element) element.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="px-6 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 border-2 border-blue-600 text-blue-400 rounded-full font-semibold text-sm sm:text-base md:text-lg hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105"
+              className="px-6 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 border-2 border-blue-600 text-blue-400 rounded-full font-semibold text-base sm:text-lg md:text-xl hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105"
             >
               Get In Touch
             </a>
