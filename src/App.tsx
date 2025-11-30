@@ -13,7 +13,7 @@ import Chatbot from './components/Chatbot';
 function App() {
   return (
     <AppProvider>
-      <div className="min-h-screen bg-slate-900 text-white">
+      <div className="min-h-screen bg-dark text-white selection:bg-neon-blue selection:text-dark">
         <Navigation />
         <Hero />
         <About />

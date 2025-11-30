@@ -1,74 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { ChevronDown, Github, Linkedin, Facebook, Instagram } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { motion } from 'framer-motion';
+import { Canvas } from '@react-three/fiber';
+import { Preload } from '@react-three/drei';
+import WarpStars from './canvas/WarpStars';
+import ScrambleText from './ui/ScrambleText';
+import BinaryText from './ui/BinaryText';
+import ErrorBoundary from './ErrorBoundary';
 
 const Hero: React.FC = () => {
   const { userData } = useApp();
-  const [isVisible, setIsVisible] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    setIsVisible(true);
-
-    // Moving Star Animation
-    const canvas = document.getElementById('star-canvas') as HTMLCanvasElement | null;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
-
-    const STAR_COUNT = 500;
-    const stars = Array.from({ length: STAR_COUNT }, () => ({
-      x: Math.random() * width - width / 2, // Spread stars from right to left
-      y: Math.random() * height,
-      z: Math.random() * width,
-      o: 0.5 + Math.random() * 0.5,
-      r: 0.5 + Math.random() * 1.5,
-      speed: 0.5 + Math.random() * 1.5
-    }));
-
-    function drawStars() {
-      ctx?.clearRect(0, 0, width, height);
-      for (let star of stars) {
-        star.z -= star.speed;
-        if (star.z <= 0) {
-          star.x = Math.random() * width;
-          star.y = Math.random() * height;
-          star.z = width;
-        }
-        let k = 128.0 / star.z;
-        let sx = star.x * k + width / 2;
-        let sy = star.y * k + height / 2;
-        if (sx < 0 || sx >= width || sy < 0 || sy >= height) continue;
-        ctx?.beginPath();
-        ctx?.arc(sx, sy, star.r, 0, 2 * Math.PI);
-        ctx!.fillStyle = `rgba(180,220,255,${star.o})`;
-        ctx?.fill();
-      }
-    }
-
-    let animationFrameId: number;
-    function animate() {
-      drawStars();
-      animationFrameId = requestAnimationFrame(animate);
-    }
-    animate();
-
-    function handleResize() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      if (canvas) {
-        canvas.width = width;
-        canvas.height = height;
-      }
-    }
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 2 - 1,
+        y: (e.clientY / window.innerHeight) * 2 - 1
+      });
     };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const scrollToAbout = () => {
@@ -79,83 +33,132 @@ const Hero: React.FC = () => {
   };
 
   const socialIcons = [
-    { icon: Github, href: userData.socialLinks.github, label: 'GitHub' },
-    { icon: Linkedin, href: userData.socialLinks.linkedin, label: 'LinkedIn' },
-    { icon: Facebook, href: userData.socialLinks.facebook, label: 'Facebook' },
-    { icon: Instagram, href: userData.socialLinks.instagram, label: 'Instagram' },
+    { icon: Github, href: userData?.socialLinks?.github || '#', label: 'GitHub' },
+    { icon: Linkedin, href: userData?.socialLinks?.linkedin || '#', label: 'LinkedIn' },
+    { icon: Facebook, href: userData?.socialLinks?.facebook || '#', label: 'Facebook' },
+    { icon: Instagram, href: userData?.socialLinks?.instagram || '#', label: 'Instagram' },
   ];
 
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Moving Star Animated Background */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <canvas id="star-canvas" className="w-full h-full block" style={{ position: 'absolute', inset: 0 }}></canvas>
+    <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden bg-dark">
+      {/* CSS-based Futuristic Background */}
+      <div className="absolute inset-0 z-0 bg-dark overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black"></div>
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 animate-pulse">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-neon-blue/30 rounded-full blur-[100px]"></div>
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-neon-purple/20 rounded-full blur-[80px]"></div>
+          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-neon-pink/10 rounded-full blur-[120px]"></div>
+        </div>
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
-      <div className="relative z-10 text-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
-        <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-5">
-            <span className="block text-white mb-1 sm:mb-1.5">Hello, I'm</span>
-            <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
-              Kavishka Thilakarathna
-            </span>
-          </h1>
-          
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-5 sm:mb-6 md:mb-7 max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto leading-relaxed">
-            Computer Science Student & Aspiring Software Developer
-          </p>
-          
-          <div className="flex justify-center space-x-3 sm:space-x-4 md:space-x-5 mb-6 sm:mb-7 md:mb-8">
-            {socialIcons.map((social, index) => {
-              const Icon = social.icon;
-              return (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`p-2 sm:p-2.5 md:p-3 rounded-full bg-slate-800/50 border border-slate-700 text-gray-300 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
-                  style={{ transitionDelay: `${index * 100}ms` }}
-                >
-                  <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" />
-                </a>
-              );
-            })}
-          </div>
+      {/* Holographic Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark/20 to-dark z-0 pointer-events-none"></div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <button
-              onClick={scrollToAbout}
-              className="px-6 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold text-base sm:text-lg md:text-xl hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
+      <div className="relative z-10 text-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pointer-events-none">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          style={{
+            transform: `translate(${mousePosition.x * 10}px, ${mousePosition.y * 10}px)`
+          }}
+          className="pointer-events-auto inline-block"
+        >
+          {/* Holographic Glass Card */}
+          <div className="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden group">
+            {/* Scanning Light Effect */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-blue to-transparent opacity-50 animate-scan"></div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mb-6"
             >
-              Explore My Work
-            </button>
-            <a
-              href="#contact"
-              onClick={(e) => {
-                e.preventDefault();
-                const element = document.querySelector('#contact');
-                if (element) element.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="px-6 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 border-2 border-blue-600 text-blue-400 rounded-full font-semibold text-base sm:text-lg md:text-xl hover:bg-blue-600 hover:text-white transition-all duration-300 hover:scale-105"
+              <span className="px-4 py-2 rounded-full border border-neon-blue/30 bg-neon-blue/10 text-neon-blue text-sm font-mono tracking-wider backdrop-blur-sm">
+                <BinaryText text="CURIOSITY FIRST" className="inline-block text-neon-blue" revealSpeed={30} />
+              </span>
+            </motion.div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
+              <span className="block text-white mb-2 drop-shadow-lg text-opacity-90">Hello, I'm</span>
+              <ScrambleText
+                text={userData.name || "Kavishka Thilakarathna"}
+                className="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue via-white to-neon-pink font-black"
+              />
+            </h1>
+
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-md">
+              {userData.title || "Computer Science Student & Aspiring Software Developer"}
+            </p>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex justify-center gap-6 mb-10"
             >
-              Get In Touch
-            </a>
+              {socialIcons.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <motion.a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-neon-blue hover:border-neon-blue/50 hover:bg-neon-blue/10 transition-all duration-300 backdrop-blur-sm shadow-lg hover:shadow-neon-blue/20"
+                  >
+                    <Icon className="w-6 h-6" />
+                  </motion.a>
+                );
+              })}
+            </motion.div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={scrollToAbout}
+                className="relative px-8 py-4 bg-gradient-to-r from-cyan-400 to-blue-600 text-white rounded-full font-bold text-lg shadow-[0_0_20px_rgba(0,243,255,0.4)] hover:shadow-[0_0_35px_rgba(0,243,255,0.6)] transition-all duration-300 overflow-hidden group/btn"
+              >
+                <span className="relative z-10 drop-shadow-sm">Discover Universe</span>
+                <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12 group-hover/btn:animate-shine"></div>
+              </motion.button>
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href="#contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.querySelector('#contact');
+                  if (element) element.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-8 py-4 border border-white/20 text-white rounded-full font-bold text-lg hover:bg-white/5 hover:border-neon-purple/50 transition-colors backdrop-blur-sm z-20"
+              >
+                Get In Touch
+              </motion.a>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-         <button
-  type="button"
-  onClick={scrollToAbout}
-  className="group inline-flex items-center text-gray-400 hover:text-white transition-colors duration-300
-             focus:outline-none focus-visible:ring focus-visible:ring-blue-500"
->
-  {/* optional hover animation */}
-  <ChevronDown className="w-8 h-8 transform transition-transform duration-300 group-hover:translate-y-1" />
-</button>
-
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1 }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-auto"
+        >
+          <motion.button
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            onClick={scrollToAbout}
+            className="text-gray-500 hover:text-neon-blue transition-colors"
+          >
+            <ChevronDown className="w-10 h-10" />
+          </motion.button>
+        </motion.div>
       </div>
     </section>
   );

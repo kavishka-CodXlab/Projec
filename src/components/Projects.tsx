@@ -1,183 +1,202 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ExternalLink, Github, Code, Calendar, Loader2, AlertCircle } from 'lucide-react';
+import React from 'react';
+import { ExternalLink, Github, Code, Loader2, AlertCircle, ArrowUpRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
-const Projects: React.FC = () => {
-  const { projects, loading, error } = useApp();
-  const [isVisible, setIsVisible] = useState(false);
-  const sectionRef = useRef<HTMLDivElement>(null);
+const ProjectCard = ({ project }: { project: any }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
+  const mouseXSpring = useSpring(x);
+  const mouseYSpring = useSpring(y);
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["17.5deg", "-17.5deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-17.5deg", "17.5deg"]);
 
-    return () => observer.disconnect();
-  }, []);
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
 
-  if (loading) {
-    return (
-      <section id="projects" ref={sectionRef} className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-slate-800/50">
-        <div className="max-w-6xl sm:max-w-7xl lg:max-w-7xl xl:max-w-8xl 2xl:max-w-9xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
-          <div className="flex items-center justify-center py-16">
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Loader2 className="w-6 h-6 animate-spin" />
-              <span>Loading projects...</span>
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="group relative h-full"
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500 -z-10"></div>
+      <div className="glass-card h-full rounded-2xl overflow-hidden border border-white/10 group-hover:border-cyan-400/50 transition-colors duration-300 flex flex-col">
+        {/* Image Container */}
+        <div className="relative h-48 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent z-10 opacity-80"></div>
+          <motion.img
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.5 }}
+            src={project.image}
+            alt={project.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg';
+            }}
+          />
+
+          {/* Overlay Actions */}
+          <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-[2px]">
+            <div className="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+              {project.githubUrl && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-dark/90 rounded-full text-white hover:text-cyan-400 hover:shadow-[0_0_15px_rgba(34,211,238,0.5)] transition-all border border-white/10 hover:border-cyan-400/50"
+                  title="View Code"
+                >
+                  <Github className="w-5 h-5" />
+                </a>
+              )}
+              {project.liveUrl && (
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-dark/90 rounded-full text-white hover:text-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all border border-white/10 hover:border-blue-500/50"
+                  title="Live Demo"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </a>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Content */}
+        <div className="p-6 flex-grow flex flex-col relative z-20">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-600 transition-all duration-300">
+              {project.title}
+            </h3>
+            <ArrowUpRight className="w-5 h-5 text-gray-500 group-hover:text-cyan-400 transition-colors opacity-0 group-hover:opacity-100" />
+          </div>
+
+          <p className="text-gray-400 text-sm mb-4 line-clamp-3 flex-grow">
+            {project.description}
+          </p>
+
+          <div className="flex flex-wrap gap-2 mt-auto">
+            {project.technologies.map((tech: string, index: number) => (
+              <span
+                key={index}
+                className="px-2 py-1 text-[10px] uppercase tracking-wider font-medium rounded-md bg-white/5 text-gray-300 border border-white/10 group-hover:border-cyan-400/30 group-hover:text-cyan-400 transition-colors"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const Projects: React.FC = () => {
+  const { projects, loading, error } = useApp();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <section id="projects" className="py-20 bg-dark min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-cyan-400" />
       </section>
     );
   }
 
   if (error) {
     return (
-      <section id="projects" ref={sectionRef} className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-slate-800/50">
-        <div className="max-w-6xl sm:max-w-7xl lg:max-w-7xl xl:max-w-8xl 2xl:max-w-9xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
-          <div className="flex items-center justify-center py-16">
-            <div className="text-center">
-              <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Error Loading Projects</h3>
-              <p className="text-gray-400">{error}</p>
-            </div>
-          </div>
+      <section id="projects" className="py-20 bg-dark min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-400">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+          <p>{error}</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section id="projects" ref={sectionRef} className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-slate-800/50">
-      <div className="max-w-6xl sm:max-w-7xl lg:max-w-7xl xl:max-w-8xl 2xl:max-w-9xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
-        <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="text-center mb-8 sm:mb-10 md:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4">
-              Featured <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Projects</span>
-            </h2>
-            <div className="w-16 sm:w-20 md:w-24 lg:w-28 h-0.5 sm:h-1 bg-gradient-to-r from-blue-400 to-purple-600 mx-auto rounded-full"></div>
-            <p className="text-gray-300 mt-3 sm:mt-4 max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto text-sm sm:text-base md:text-lg">
-              Here are some of the projects I've worked on, showcasing my skills in various technologies and frameworks.
-            </p>
+    <section id="projects" className="py-24 bg-dark relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-400/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-20"
+        >
+          <div className="inline-block mb-4">
+            <span className="px-4 py-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-400 text-sm font-mono tracking-wider backdrop-blur-sm">
+              INNOVATION_HUB
+            </span>
           </div>
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
+            Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Projects</span>
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+            Exploring the boundaries of code and creativity.
+          </p>
+        </motion.div>
 
-          {projects.length === 0 ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="text-center">
-                <Code className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">No Projects Found</h3>
-                <p className="text-gray-400">No projects are available at the moment.</p>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-6 sm:gap-7 md:gap-8 lg:gap-9 xl:gap-10 2xl:gap-12">
-              {projects.map((project, index) => (
-                <div
-                  key={project.id}
-                  className={`group bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-slate-700 hover:border-blue-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                  style={{ transitionDelay: `${index * 200}ms` }}
-                >
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-48 sm:h-52 md:h-56 lg:h-60 object-cover transition-transform duration-500 group-hover:scale-110"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg';
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      {project.githubUrl && (
-                        <a
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 bg-slate-800/80 rounded-full text-white hover:bg-blue-600 transition-colors duration-200"
-                          title="View on GitHub"
-                        >
-                          <Github className="w-4 h-4" />
-                        </a>
-                      )}
-                      {project.liveUrl && (
-                        <a
-                          href={project.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 bg-slate-800/80 rounded-full text-white hover:bg-blue-600 transition-colors duration-200"
-                          title="View Live Demo"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="flex items-center mb-3">
-                      <Code className="w-5 h-5 text-blue-400 mr-2" />
-                      <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-200">{project.title}</h3>
-                    </div>
-                    
-                    <p className="text-gray-300 mb-4 leading-relaxed text-sm line-clamp-3">
-                      {project.description}
-                    </p>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.map((tech, techIndex) => (
-                        <span
-                          key={techIndex}
-                          className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-xs font-medium border border-blue-600/30 hover:bg-blue-600/30 transition-colors duration-200"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex justify-between items-center pt-4 border-t border-slate-700">
-                      <div className="flex items-center text-gray-400 text-sm">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        <span>Recent</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        {project.githubUrl && (
-                          <a
-                            href={project.githubUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-white transition-colors duration-200"
-                            title="View on GitHub"
-                          >
-                            <Github className="w-4 h-4" />
-                          </a>
-                        )}
-                        {project.liveUrl && (
-                          <a
-                            href={project.liveUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-white transition-colors duration-200"
-                            title="View Live Demo"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {projects.length === 0 ? (
+          <div className="text-center text-gray-500 py-20">
+            <Code className="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <p>No projects found yet.</p>
+          </div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-1000"
+          >
+            {projects.map((project) => (
+              <motion.div key={project.id} variants={{
+                hidden: { opacity: 0, y: 50 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+              }}>
+                <ProjectCard project={project} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
   );

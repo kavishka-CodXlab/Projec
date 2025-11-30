@@ -1,99 +1,145 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Code, Database, Globe, Server } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import React from 'react';
+import { Database, Globe, Server, Cpu } from 'lucide-react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import ScrambleText from './ui/ScrambleText';
+
+const SkillCard = ({ category, index }: { category: any, index: number }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x);
+  const mouseYSpring = useSpring(y);
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  const Icon = category.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="group relative h-full perspective-1000"
+    >
+      <div className={`absolute inset-0 bg-gradient-to-r ${category.color} rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500 -z-10`}></div>
+      <div className="glass-card h-full rounded-2xl p-6 border border-white/10 group-hover:border-cyan-400/50 transition-all duration-300 relative overflow-hidden">
+
+        {/* Background Grid Pattern */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+
+        <div className="relative z-10 transform-style-3d group-hover:translate-z-10">
+          <div className={`w-14 h-14 bg-gradient-to-r ${category.color} rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-shadow duration-300`}>
+            <Icon className="w-7 h-7 text-white" />
+          </div>
+
+          <h3 className="text-xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">{category.name}</h3>
+
+          <div className="flex flex-wrap gap-2">
+            {category.skills.map((skill: string, skillIndex: number) => (
+              <span
+                key={skillIndex}
+                className="px-3 py-1.5 text-xs font-medium rounded-md bg-white/5 text-gray-300 border border-white/10 group-hover:border-cyan-400/30 group-hover:text-cyan-400 group-hover:bg-cyan-400/10 transition-all duration-300"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 const Skills: React.FC = () => {
-  const { userData } = useApp();
-  const [isVisible, setIsVisible] = useState(false);
-  const sectionRef = useRef<HTMLDivElement>(null);
-
   const skillCategories = [
     {
       name: 'Frontend',
       icon: Globe,
-      skills: ['JavaScript', 'TypeScript', 'React', 'HTML/CSS'],
-      color: 'from-blue-500 to-cyan-500'
+      skills: ['React', 'TypeScript', 'Tailwind CSS', 'Next.js', 'Vue.js', 'Angular'],
+      color: 'from-cyan-400 to-blue-600'
     },
     {
       name: 'Backend',
       icon: Server,
-      skills: ['Node.js', 'Python', 'Java'],
-      color: 'from-green-500 to-emerald-500'
+      skills: ['Node.js', 'Express', 'Python', 'Java', 'Go'],
+      color: 'from-blue-600 to-indigo-600'
     },
     {
-      name: 'Database',
+      name: 'Database & Cloud',
       icon: Database,
-      skills: ['SQL', 'MongoDB'],
-      color: 'from-purple-500 to-pink-500'
+      skills: ['PostgreSQL', 'MongoDB', 'MySQL', 'AWS', 'Docker', 'Firebase', 'Azure'],
+      color: 'from-indigo-600 to-violet-600'
     },
     {
-      name: 'Tools',
-      icon: Code,
-      skills: ['Git'],
-      color: 'from-orange-500 to-red-500'
+      name: 'Architecture & Tools',
+      icon: Cpu,
+      skills: ['GitLab', 'Jenkins', 'Git', 'CI/CD', 'Linux', 'Figma'],
+      color: 'from-violet-600 to-purple-600'
     }
   ];
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section id="skills" ref={sectionRef} className="py-20 bg-slate-900/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          {/* Section Title */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Technical <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Skills</span>
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-600 mx-auto rounded-full"></div>
-            <p className="text-gray-300 mt-4 max-w-2xl mx-auto">
-              Technologies and tools I use to build efficient and elegant solutions.
-            </p>
-          </div>
+    <section id="skills" className="py-24 bg-dark relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-cyan-400/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-          {/* Skill Categories */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {skillCategories.map((category, index) => {
-              const Icon = category.icon;
-              return (
-                <div
-                  key={category.name}
-                  className={`bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                  style={{ transitionDelay: `${index * 100}ms` }}
-                >
-                  <div className={`w-12 h-12 bg-gradient-to-r ${category.color} rounded-xl flex items-center justify-center mb-4`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{category.name}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {category.skills.map((skill, skillIndex) => (
-                      <span
-                        key={skillIndex}
-                        className="px-3 py-1 bg-slate-700/50 text-gray-300 rounded-lg text-sm"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-20"
+        >
+          <div className="inline-block mb-4">
+            <span className="px-4 py-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-400 text-sm font-mono tracking-wider backdrop-blur-sm">
+              SYSTEM_CAPABILITIES
+            </span>
           </div>
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
+            Technical <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Skills</span>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 to-blue-600 mx-auto rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)]"></div>
+          <p className="text-gray-400 mt-6 max-w-2xl mx-auto text-lg">
+            <ScrambleText
+              text="A comprehensive toolkit for building scalable, high-performance digital solutions."
+              className="text-gray-400"
+              scrambleSpeed={50}
+            />
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {skillCategories.map((category, index) => (
+            <SkillCard key={category.name} category={category} index={index} />
+          ))}
         </div>
       </div>
     </section>
