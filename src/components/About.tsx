@@ -161,7 +161,7 @@ const About: React.FC = () => {
                         <div className="text-xs text-gray-500 uppercase tracking-wider">Projects</div>
                       </div>
                       <div className="text-center border-l border-white/5 border-r">
-                        <div className="text-xl font-bold text-white">2+</div>
+                        <div className="text-xl font-bold text-white">1+</div>
                         <div className="text-xs text-gray-500 uppercase tracking-wider">Years</div>
                       </div>
                       <div className="text-center">
