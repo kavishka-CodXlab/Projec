@@ -42,14 +42,15 @@ const Hero: React.FC = () => {
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden bg-dark">
       {/* CSS-based Futuristic Background */}
-      <div className="absolute inset-0 z-0 bg-dark overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black"></div>
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 animate-pulse">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-neon-blue/30 rounded-full blur-[100px]"></div>
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-neon-purple/20 rounded-full blur-[80px]"></div>
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-neon-pink/10 rounded-full blur-[120px]"></div>
-        </div>
-        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      {/* 3D Space Background */}
+      <div className="absolute inset-0 z-0 bg-dark">
+        <Canvas camera={{ position: [0, 0, 1] }}>
+          <Suspense fallback={null}>
+            <WarpStars />
+            <Preload all />
+          </Suspense>
+        </Canvas>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark/50 to-dark pointer-events-none" />
       </div>
 
       {/* Holographic Overlay */}

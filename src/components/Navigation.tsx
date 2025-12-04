@@ -95,17 +95,25 @@ const Navigation: React.FC = () => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <button
+                  <motion.button
                     key={item.name}
                     onClick={() => scrollToSection(item.href)}
-                    className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white transition-colors group"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white transition-colors group overflow-hidden"
                   >
-                    <span className="absolute inset-0 bg-white/5 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></span>
+                    <span className="absolute inset-0 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md"></span>
                     <span className="relative z-10 flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4 text-neon-blue/70 group-hover:text-neon-blue transition-colors" />
                       {item.name}
                     </span>
-                  </button>
+                    <motion.div
+                      className="absolute bottom-0 left-0 h-[2px] bg-neon-blue rounded-full"
+                      initial={{ width: 0 }}
+                      whileHover={{ width: '100%' }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </motion.button>
                 );
               })}
 
